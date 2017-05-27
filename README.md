@@ -37,6 +37,7 @@ the output may look like this:
 
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog1.html)
+(right-click and save locally before opening, as GitHub blocks Javascript content)
 and corresponding
 [JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog1.json)
 can be accessed for better understanding of the detailed log data provided.
@@ -51,6 +52,7 @@ The output may look like this:
 
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog2.html)
+(right-click and save locally before opening, as GitHub blocks Javascript content)
 and corresponding
 [JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog2.json)
 can be accessed for better understanding of the detailed log data provided.
@@ -65,6 +67,7 @@ The output may look like this:
 
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog3.html)
+(right-click and save locally before opening, as GitHub blocks Javascript content)
 and corresponding
 [JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog3.json)
 can be accessed for better understanding of the detailed log data provided.
