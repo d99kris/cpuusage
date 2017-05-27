@@ -29,16 +29,16 @@ these files and preload it at program start. Refer to
 "cutest1" for how it can be done in cmake.
 
 With wrapper header
-[examples/exwrapper.h]((https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
+[examples/exwrapper.h](https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
 and test program
-[examples/cutest.c]((https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
+[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
 the output may look like this:
 ![culog1 screenshot](/doc/culog1.png)
 
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog1.html)
 and corresponding
-[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog1.json)
+[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog1.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Tracing an Applications Internal Calls
@@ -52,7 +52,7 @@ The output may look like this:
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog2.html)
 and corresponding
-[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog2.json)
+[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog2.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Tracing Standard Function Calls + Applications Internal Calls
@@ -66,7 +66,7 @@ The output may look like this:
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog3.html)
 and corresponding
-[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog3.json)
+[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog3.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Usage
