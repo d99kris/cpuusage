@@ -24,8 +24,8 @@ provides an example of a listing required to trace specified functions. By using
 generation tool
 [src/genwrapper.py](https://github.com/d99kris/cpuusage/blob/master/src/genwrapper.py) one can
 generate a C file with the corresponding wrapper function bodies. The final step is to build a library of
-these files and preload it at program start. Refer to 
-[CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
+these files and preload it at program start.
+Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
 "cutest1" for how it can be done in cmake.
 
 With wrapper header
@@ -46,8 +46,12 @@ Tracing an Applications Internal Calls
 --------------------------------------
 To trace the timing of an applications internal calls one need to recompile the application with 
 "-rdynamic -finstrument-functions". One can compile with instrumentation enabled on a file-by-file basis.
+Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
+"cutest2" for how it can be done in cmake.
 
-The output may look like this:
+For the test program
+[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
+the output may look like this:
 ![culog2 screenshot](/doc/culog2.png)
 
 The actual
@@ -61,8 +65,12 @@ Tracing Standard Function Calls + Applications Internal Calls
 -------------------------------------------------------------
 This is essentially a combination of the options above, in which both a set of external function calls
 are being traced in addition to application internal calls.
+Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
+"cutest3" for how it can be done in cmake.
 
-The output may look like this:
+For the test program
+[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
+the output may look like this:
 ![culog3 screenshot](/doc/culog3.png)
 
 The actual
