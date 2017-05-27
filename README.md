@@ -2,8 +2,9 @@ Cpuusage
 ========
 Cpuusage is a simple instrumentation CPU profiler for Linux and macOS applications.
 By using compiler intrumentation (-finstrument-functions) it enables capturing start and end of function
-calls. A json logging format compatible with Chromium Catapult is used, enabling nice visualization of the
-captured data.
+calls. A JSON logging format compatible with
+[Chromium Catapult](https://github.com/catapult-project/catapult) is used, enabling nice visualization
+of the captured data.
 
 Supported Platforms
 ===================
@@ -18,26 +19,26 @@ Tracing Standard Function Calls
 -------------------------------
 Without making any changes to an existing application is it possible to trace its calls to a specified
 set of function calls. The header file
-[examples/exwrapper.h](https://raw.githubusercontent.com/d99kris/cpuusage/master/examples/exwrapper.h)
+[examples/exwrapper.h](https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
 provides an example of a listing required to trace specified functions. By using the provided code
 generation tool
-[src/genwrapper.py](https://raw.githubusercontent.com/d99kris/cpuusage/master/src/genwrapper.py) one can
+[src/genwrapper.py](https://github.com/d99kris/cpuusage/blob/master/src/genwrapper.py) one can
 generate a C file with the corresponding wrapper function bodies. The final step is to build a library of
 these files and preload it at program start. Refer to 
-[CMakeLists.txt](https://raw.githubusercontent.com/d99kris/cpuusage/master/CMakeLists.txt) example
+[CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
 "cutest1" for how it can be done in cmake.
 
 With wrapper header
-[examples/exwrapper.h](https://raw.githubusercontent.com/d99kris/cpuusage/master/examples/exwrapper.h)
+[examples/exwrapper.h]((https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
 and test program
-[examples/cutest.c](https://raw.githubusercontent.com/d99kris/cpuusage/master/examples/cutest.c)
+[examples/cutest.c]((https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
 the output may look like this:
 ![culog1 screenshot](/doc/culog1.png)
 
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog1.html)
 and corresponding
-[JSON log data](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog1.json)
+[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog1.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Tracing an Applications Internal Calls
@@ -51,7 +52,7 @@ The output may look like this:
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog2.html)
 and corresponding
-[JSON log data](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog2.json)
+[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog2.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Tracing Standard Function Calls + Applications Internal Calls
@@ -65,7 +66,7 @@ The output may look like this:
 The actual
 [Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog3.html)
 and corresponding
-[JSON log data](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog3.json)
+[JSON log data]((https://github.com/d99kris/cpuusage/blob/master/doc/culog3.json)
 can be accessed for better understanding of the detailed log data provided.
 
 Usage
@@ -88,7 +89,7 @@ The run-time configuration of cpuusage is done using environment variables.
 
 CU_FILE
 -------
-This environment variable determines the path and filename of the output json trace file. If not
+This environment variable determines the path and filename of the output JSON trace file. If not
 specified the default output log name is culog-<PID>.json.
 
 CU_MANUAL
