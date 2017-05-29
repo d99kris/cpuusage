@@ -39,5 +39,5 @@ target_link_libraries(cutest2 pthread cpuusage)
 # cpuusage example cutest3 - instrumented, not linking cpuusage library (needs library preload)
 add_executable(cutest3 examples/cutest.c)
 set_target_properties(cutest3 PROPERTIES COMPILE_FLAGS "-rdynamic -finstrument-functions")
-target_link_libraries(cutest3 pthread)
+target_link_libraries(cutest3 pthread cpuusage)
 
