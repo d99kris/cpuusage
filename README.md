@@ -133,11 +133,10 @@ Resulting visualization:
 
 Alternatives
 ============
-There are many CPU profilers available for Linux and macOS. Most of them are sample-based, and here
+There are many CPU profilers available for Linux. Most of them are sample-based, and here
 is a list of some of them:
 - Gperftools
 - Gprof
-- Instruments - Time Profiler (Mac only)
 - Valgrind - Callgrind
 
 License
@@ -146,5 +145,5 @@ Cpuusage is distributed under the BSD 3-Clause license. See LICENSE file.
 
 Keywords
 ========
-linux, macos, os x, cpu usage, instrumented profiler, alternative to callgrind.
+linux, cpu usage, instrumented profiler, alternative to callgrind.
 
