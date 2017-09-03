@@ -137,8 +137,8 @@ There are many CPU profilers available for Linux and macOS. Most of them are sam
 is a list of some of them:
 - Gperftools
 - Gprof
-- Valgrind - Callgrind
 - Instruments - Time Profiler (Mac only)
+- Valgrind - Callgrind
 
 License
 =======
