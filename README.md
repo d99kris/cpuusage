@@ -23,7 +23,7 @@ Resulting visualization:
 
 Supported Platforms
 ===================
-Heapusage is primarily developed and tested on Linux.
+Cpuusage is primarily developed and tested on Linux.
 
 Installation
 ============
