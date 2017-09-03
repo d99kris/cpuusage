@@ -92,7 +92,7 @@ Options:
 
 More Examples
 =============
-*Tracing specified POSIX function calls from a regular (non-instrumented) application:*
+**Tracing specified POSIX function calls from a regular (non-instrumented) application:**
 
     $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./build/cutest1 
     cpuusage: https://github.com/d99kris/cpuusage
@@ -105,7 +105,7 @@ More Examples
 Resulting visualization:
 ![culog2 screenshot](/doc/culog2.png)
 
-*Tracing internal function calls in an instrumented application:*
+**Tracing internal function calls in an instrumented application:**
 
     $ cpuusage -v -o cutrace3.html -c ./build/cutest2
     cpuusage: https://github.com/d99kris/cpuusage
@@ -118,7 +118,7 @@ Resulting visualization:
 Resulting visualization:
 ![culog3 screenshot](/doc/culog3.png)
 
-*Tracing internal function calls and all external POSIX function calls in an instrumented application:*
+**Tracing internal function calls and all external POSIX function calls in an instrumented application:**
 
     $ cpuusage -v -o cutrace4.html -c -a ./build/cutest2
     cpuusage: https://github.com/d99kris/cpuusage
