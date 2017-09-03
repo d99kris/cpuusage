@@ -1,0 +1,10 @@
+int    hcreate(size_t a);
+void   hdestroy(void);
+void   insque(void *a, void *b);
+void  *lfind(const void *a, const void *b, size_t *c, size_t d, int (*e)(const void *, const void *));
+void  *lsearch(const void *a, void *b, size_t *c, size_t d, int (*e)(const void *, const void *));
+void   remque(void *a);
+void  *tdelete(const void *restrict a, void **restrict b, int(*c)(const void *, const void *));
+void  *tfind(const void *a, void *const *b, int(*c)(const void *, const void *));
+void  *tsearch(const void *a, void **b, int(*c)(const void *, const void *));
+void   twalk(const void *a, void (*b)(const void *, VISIT, int ));

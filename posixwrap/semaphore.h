@@ -1,0 +1,10 @@
+int    sem_close(sem_t *a);
+int    sem_destroy(sem_t *a);
+int    sem_getvalue(sem_t *restrict a, int *restrict b);
+int    sem_init(sem_t *a, int b, unsigned c);
+//unsupported (variable args): sem_t *sem_open(const char *a, int b, ...);
+int    sem_post(sem_t *a);
+int    sem_timedwait(sem_t *restrict a, const struct timespec *restrict b);
+int    sem_trywait(sem_t *a);
+int    sem_unlink(const char *a);
+int    sem_wait(sem_t *a);

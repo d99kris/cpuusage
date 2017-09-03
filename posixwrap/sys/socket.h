@@ -1,0 +1,18 @@
+int     accept(int a, struct sockaddr *restrict b, socklen_t *restrict c);
+int     bind(int a, const struct sockaddr *b, socklen_t c);
+int     connect(int a, const struct sockaddr *b, socklen_t c);
+int     getpeername(int a, struct sockaddr *restrict b, socklen_t *restrict c);
+int     getsockname(int a, struct sockaddr *restrict b, socklen_t *restrict c);
+int     getsockopt(int a, int b, int c, void *restrict d, socklen_t *restrict e);
+int     listen(int a, int b);
+ssize_t recv(int a, void *b, size_t c, int d);
+ssize_t recvfrom(int a, void *restrict b, size_t c, int d, struct sockaddr *restrict e, socklen_t *restrict f);
+ssize_t recvmsg(int a, struct msghdr *b, int c);
+ssize_t send(int a, const void *b, size_t c, int d);
+ssize_t sendmsg(int a, const struct msghdr *b, int c);
+ssize_t sendto(int a, const void *b, size_t c, int d, const struct sockaddr *e, socklen_t f);
+int     setsockopt(int a, int b, int c, const void *d, socklen_t e);
+int     shutdown(int a, int b);
+int     sockatmark(int a);
+int     socket(int a, int b, int c);
+int     socketpair(int a, int b, int c, int d[2]);

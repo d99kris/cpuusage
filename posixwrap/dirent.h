@@ -1,0 +1,11 @@
+int            alphasort(const struct dirent **a, const struct dirent **b);
+int            closedir(DIR *a);
+int            dirfd(DIR *a);
+DIR           *fdopendir(int a);
+DIR           *opendir(const char *a);
+struct dirent *readdir(DIR *a);
+int            readdir_r(DIR *restrict a, struct dirent *restrict b, struct dirent **restrict c);
+void           rewinddir(DIR *a);
+int            scandir(const char *a, struct dirent ***b, int (*c)(const struct dirent *), int (*d)(const struct dirent **, const struct dirent **));
+void           seekdir(DIR *a, long b);
+long           telldir(DIR *a);

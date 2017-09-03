@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.1)
+
+# general build setup
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_STANDARD 11)
+if (CMAKE_CXX_COMPILER_ID MATCHES "(Clang|GNU)")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -pedantic")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
+endif ()
+
+# cpuusage library
+project (cpuusage)
+file(GLOB SOURCES cumain.cpp)
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(${PROJECT_NAME}static STATIC ${SOURCES})
+set_property(TARGET ${PROJECT_NAME}static PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_link_libraries(${PROJECT_NAME} dl)
+target_link_libraries(${PROJECT_NAME}static dl)
+
+# wrapper library
+add_library(wrapper SHARED wrapper.c)
+target_link_libraries(wrapper cpuusagestatic dl)
+set_target_properties(wrapper PROPERTIES COMPILE_FLAGS "-finstrument-functions")

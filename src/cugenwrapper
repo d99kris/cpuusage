@@ -5,11 +5,6 @@
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
 #
-# Todo:
-# - Make generated initialization code thread-safe (mutex or spinlock protected)
-# - Handle function pointer arguments
-# - Handle variable arguments (...)
-#
 
 import re
 import sys
@@ -19,6 +14,7 @@ def genwrapper(infilepath, outfilepath):
     outfile = open(outfilepath, 'w')
     # Target buffers
     headers = "#define _GNU_SOURCE\n#include <dlfcn.h>\n"
+    headers += "#include <stddef.h>\n#include <stdarg.h>\n"
     globs = "static int inited = 0;"
     lin_wrapinit = ""
     lin_wrapdecl = ""
@@ -43,24 +39,63 @@ def genwrapper(infilepath, outfilepath):
                 if rtype.strip() == "void":
                     rcall = ""
                 name = line[namestart+1:paropen]
+                realname = "real_" + name
+                callname = realname
                 args = line[paropen+1:parclose]
+                precall = ""
+                postcall = ""
                 callargs = ""
+                prevargname = ""
+                orgargs = args
+
+                # Clean up func pointers
+                funptrsfindall = re.findall("\((.*?)\)\((.*?)\)", args)
+                funptrscount = len(funptrsfindall)
+                for funptrid in range(0, funptrscount):
+                    funptrsfind = re.search("\((.*?)\)\((.*?)\)", args)
+                    funptrs = re.compile("\((.*?)\)\((.*?)\)")
+                    args = re.sub(funptrs, " " + funptrsfind.group(1), args, 1)
+                
                 for arg in args.split(","):
-                    argnamestart = max(arg.rfind(" "), arg.rfind("*"))
-                    if argnamestart > 0:
-                        argname = arg[max(arg.rfind(" "), arg.rfind("*")) + 1:]
-                        if len(callargs) > 0:
-                            callargs += ", "
+                    argname = ""
+                    if (arg.strip() == "..."):
+                        argname = "args";
+                        precall = "  va_list args;\n  va_start(args, " + prevargname + ");\n"
+                        postcall = "  va_end(args);\n"
+                        callname = "v" + name
+                    else:
+                        argnamestart = max(arg.rfind(" "), arg.rfind("*"))
+                        if argnamestart > 0:
+                            argname = arg[max(arg.rfind(" "), arg.rfind("*")) + 1:]
+                            brackets = re.compile('\[.*?\]')
+                            argname = re.sub(brackets, '', argname)
+                        
+                    if len(callargs) > 0:
+                        callargs += ", "
+
+                    if len(argname) > 0:
                         callargs += argname
+                        prevargname = argname
                     
                 if (name == "malloc") or (name == "free") or (name == "calloc") or (name == "realloc"):
                     lin_wrapdecl += "" + rtype + "__libc_" + name + "(" + args + ");\n"
                     lin_wrapinit += ""
                     lin_wrapbody += line[0:semi] + "\n{\n  " + rcall + "__libc_" + name + "(" + callargs + ");\n}\n\n";
                 else:
-                    lin_wrapdecl += "static " + rtype + "(*real_" + name + ") " + "(" + args + ")" + " = NULL;\n"
-                    lin_wrapinit += "  real_" + name + " = dlsym(RTLD_NEXT, \"" + name + "\");\n"
-                    lin_wrapbody += line[0:semi] + "\n{\n  if (!inited) { wrapper_init(); }\n  " + rcall + "real_" + name + "(" + callargs + ");\n}\n\n";
+                    lin_wrapdecl += "static " + rtype + "(*" + realname + ") " + "(" + orgargs + ")" + " = NULL;\n"
+                    lin_wrapinit += "  " + realname + " = dlsym(RTLD_NEXT, \"" + name + "\");\n"
+                    lin_wrapbody += line[0:semi] + "\n{\n  if (!inited) { wrapper_init(); }\n"
+                    lin_wrapbody += precall
+                    if rcall != "":
+                        lin_wrapbody += "  " + rtype + " rv = " + callname + "(" + callargs + ");\n"
+                    else:
+                        lin_wrapbody += "  " + callname + "(" + callargs + ");\n"                     
+                    lin_wrapbody += postcall
+                    if rcall != "":
+                        lin_wrapbody += "  return rv;\n"
+                    else:
+                        lin_wrapbody += "  return;\n"
+                    lin_wrapbody += "}\n\n";
                     
                 osx_wrapdecl += rtype + "wrap_" + name + "(" + args + ");\n"
                 osx_wrapbody += rtype + "wrap_" + name + "(" + args + ")\n{\n  " + rcall + name + "(" + callargs + ");\n}\n" + "DYLD_INTERPOSE(wrap_" + name + ", " + name + ");\n\n"
@@ -93,7 +128,6 @@ def genwrapper(infilepath, outfilepath):
     outfile.write("}\n\n");
     outfile.write("void __attribute__ ((destructor)) wrapper_fini(void)\n");
     outfile.write("{\n");
-    outfile.write("  inited = 0;\n")
     outfile.write("}\n\n");
     outfile.write(lin_wrapbody)
     outfile.write("#endif\n\n")
@@ -103,6 +137,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         genwrapper(sys.argv[1], sys.argv[2])
     else:
-        print("usage: gendlwrap.py <input h-file> <output c-file>")
+        print("usage: cugenwrapper <input h-file> <output c-file>")
         exit
 

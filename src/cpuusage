@@ -1,0 +1,290 @@
+#!/bin/bash
+
+# Copyright (C) 2017 Kristofer Berggren
+# All rights reserved.
+#
+# cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
+# details.
+
+# Usage
+showusage()
+{
+  echo "cpuusage is an instrumentation profiler enabling logging of the duration of"
+  echo "internal function calls (for programs compiled with -finstrument-functions flag)" 
+  echo "or external standard POSIX function calls. It provides visualization in HTML"
+  echo "format using Chromium Catapult."
+  echo ""
+  echo "Usage: cpuusage -a [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage -c [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage --help|-h"
+  echo "   or: cpuusage --version|-v"
+  echo ""
+  echo "Modes:"
+  echo "   -a              trace all standard POSIX function calls"
+  echo "   -c              trace internal function calls (requires PROG to"
+  echo "                   be compiled with -finstrument-functions)"
+  echo "   -f <FUNCTIONS>  trace specified POSIX functions"
+  echo "   -i <INCLUDES>   trace functions in specified POSIX headers"
+  echo "   --help, -h      display this help and exit"
+  echo "   --version, -v   output version information and exit"
+  echo ""
+  echo "Options:"
+  echo "   -j <PATH>       write iterim JSON trace log to specified path"
+  echo "   -m <SAMPLES>    only log up to specified number of samples"
+  echo "   -o <PATH>       write HTML report to specified path, rather"
+  echo "                   than default ./cutrace-PID.html"
+  echo "   -v              verbose mode"
+  echo "   PROG            program to run and profile"
+  echo "   [ARGS]          optional arguments to the program"
+  echo ""
+  echo "Examples:"
+  echo "cpuusage -o cutrace.html -a ./build/cutest1"
+  echo "                   trace all standard POSIX function calls in ./build/cutest1"
+  echo "                   and write log to cutrace.html"
+  echo ""
+  echo "cpuusage -o cutrace.html -c ./build/cutest2"
+  echo "                   trace instrumented functions in ./build/cutest2 and write"
+  echo "                   log to cutrace.html"
+  echo ""
+  echo "cpuusage -o cutrace.html -f fopen,fclose,fread,fwrite ./build/cutest1"
+  echo "                   trace calls to fopen, fclose, fread and fwrite, and write"
+  echo "                   log to cutrace.html"
+  echo ""
+  echo "cpuusage -o cutrace.html -i stdio.h ./build/cutest1"
+  echo "                   trace calls to all POSIX functions in stdio.h and write"
+  echo "                   log to cutrace.html"
+  echo ""
+  echo "Report bugs at https://github.com/d99kris/cpuusage"
+  echo ""
+}
+
+# Version
+showversion()
+{
+  echo "cpuusage v1.1"
+  echo ""
+  echo "Copyright (C) 2017 Kristofer Berggren"
+  echo ""
+  echo "cpuusage is distributed under the BSD 3-Clause license."
+  echo ""
+  echo "Written by Kristofer Berggren"
+}
+
+# Arguments - special cases
+if [ "${1}" == "--help" ] ; then
+  showusage
+  exit 0
+elif [ "${1}" == "--version" ] ; then
+  showversion
+  exit 0
+elif [ "${#}" == "0" ] ; then
+  showusage
+  exit 1
+fi
+
+# Arguments - regular options
+ALL="0"
+FUNCS=""
+INCS=""
+INSTR="0"
+OUTPATH=""
+OUTJSONPATH=""
+VERB="false"
+while getopts "?acf:i:j:m:o:p:v" OPT; do
+  case "${OPT}" in
+  \?)
+    showusage
+    exit 1
+    ;;
+  a)
+    ALL="1"
+    ;;
+  c)
+    INSTR="1"
+    ;;
+  f)
+    FUNCS="${OPTARG}"
+    ;;
+  i)
+    INCS="${OPTARG}"
+    ;;
+  j)
+    OUTJSONPATH="${OPTARG}"
+    ;;
+  m)
+    CU_MAX_SAMPLES="${OPTARG}"
+    export CU_MAX_SAMPLES
+    ;;
+  o)
+    OUTPATH="${OPTARG}"
+    ;;
+  v)
+    VERB="true"
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+[ "$1" = "--" ] && shift
+
+# Arguments - ensure program specified
+if [ "${#}" == "0" ] ; then
+  showusage
+  exit 1
+fi
+
+# Paths
+TMPDIR=$(mktemp -d)
+BINDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIBDIR="${BINDIR}/../lib"
+CUDIR="${BINDIR}/../share/cpuusage"
+WRAPDIR="${CUDIR}/posixwrap"
+
+# Functions (-f) Mode
+if [ "${FUNCS}" != "" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch ${TMPDIR}/allheaders.txt
+  touch ${TMPDIR}/prototypes.txt
+  IFS=',' read -r -a FUNCSARRAY <<< "${FUNCS}"
+  for FUNC in "${FUNCSARRAY[@]}"; do
+    HEADERPATH=$(grep -r "${FUNC}(" ${WRAPDIR} | head -1 | cut -d':' -f1)
+    FUNCPROT=$(grep -r "${FUNC}(" ${WRAPDIR} | head -1 | cut -d':' -f2)
+    if [ "${HEADERPATH}" != "" ] && [ "${FUNCPROT}" != "" ]; then
+      HEADERNAME=${HEADERPATH:$((${#WRAPDIR} + 1))}
+      echo "${HEADERNAME}" >> ${TMPDIR}/allheaders.txt
+      echo "${FUNCPROT}" >> ${TMPDIR}/prototypes.txt
+    else
+      echo "cpuusage: warning - ${FUNC} not found in standard headers."
+    fi
+  done
+  sort ${TMPDIR}/allheaders.txt | uniq > ${TMPDIR}/headers.txt
+  rm ${TMPDIR}/allheaders.txt 2> /dev/null
+
+# Includes (-i) Mode
+elif [ "${INCS}" != "" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch ${TMPDIR}/allheaders.txt
+  touch ${TMPDIR}/prototypes.txt
+  IFS=',' read -r -a INCSARRAY <<< "${INCS}"
+  for INC in "${INCSARRAY[@]}"; do
+    if [ -f "${WRAPDIR}/${INC}" ]; then
+      cat ${WRAPDIR}/${INC} >> ${TMPDIR}/prototypes.txt
+      echo "${INC}" >> ${TMPDIR}/allheaders.txt
+    else
+      echo "cpuusage: warning - ${INC} is not a standard header."
+    fi
+  done
+  sort ${TMPDIR}/allheaders.txt | uniq > ${TMPDIR}/headers.txt
+  rm ${TMPDIR}/allheaders.txt 2> /dev/null
+
+# All (-a) Mode
+elif [ "${ALL}" == "1" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch ${TMPDIR}/allheaders.txt
+  touch ${TMPDIR}/prototypes.txt
+  (cd ${WRAPDIR} && find . -type f -name "*.h" | cut -c3- >> ${TMPDIR}/allheaders.txt)
+  while read HEADER; do
+    cat ${WRAPDIR}/${HEADER} >> ${TMPDIR}/prototypes.txt
+  done < ${TMPDIR}/allheaders.txt
+  sort ${TMPDIR}/allheaders.txt | uniq > ${TMPDIR}/headers.txt
+  rm ${TMPDIR}/allheaders.txt 2> /dev/null
+
+# Instrumented Compile (-c) Mode
+elif [ "${INSTR}" == "1" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch "${TMPDIR}/nowrappers.txt"  
+fi
+
+
+# Common
+if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
+  # Generate H-file wrapper.h
+  echo "#pragma once" >> ${TMPDIR}/wrapper.h
+  while read HEADER; do
+    echo "#include <${HEADER}>" >> ${TMPDIR}/wrapper.h
+  done < ${TMPDIR}/headers.txt
+  rm ${TMPDIR}/headers.txt
+  echo "" >> ${TMPDIR}/wrapper.h
+  while read PROTOTYPE; do
+    echo "${PROTOTYPE}" >> ${TMPDIR}/wrapper.h
+  done < ${TMPDIR}/prototypes.txt
+  rm ${TMPDIR}/prototypes.txt
+
+  # Generate C-file wrapper.c
+  ${BINDIR}/cugenwrapper ${TMPDIR}/wrapper.h ${TMPDIR}/wrapper.c  
+
+  # Copy CMake and cpuusage library source
+  cp ${CUDIR}/src/cumain.cpp ${TMPDIR}/cumain.cpp
+  cp ${CUDIR}/src/libcpuusage_CMakeLists.txt ${TMPDIR}/CMakeLists.txt
+
+  # Build
+  mkdir -p ${TMPDIR}/build
+  (cd ${TMPDIR}/build && cmake .. && make -s) > /dev/null
+
+  # Start program with tracing
+  ${VERB} && echo "cpuusage: starting program ${1}"
+  JSONPATH="${TMPDIR}/cutrace.json"
+  CU_FILE="${JSONPATH}" LD_PRELOAD="${TMPDIR}/build/libwrapper.so" \
+    DYLD_INSERT_LIBRARIES="${TMPDIR}/build/libwrapper.dylib" \
+    DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
+  CHILDPID="${!}"
+  wait ${CHILDPID}
+
+  # Save JSON if needed
+  if [ "${OUTJSONPATH}" != "" ]; then
+    cp ${JSONPATH} ${OUTJSONPATH}
+  fi
+
+  # Convert JSON trace to HTML
+  ${VERB} && echo "cpuusage: processing output trace"
+  if [ "${OUTPATH}" == "" ]; then
+    OUTPATH="./cutrace-${CHILDPID}.html"
+  fi
+  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+
+  SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
+  ${VERB} && echo "cpuusage: completed processing ${SAMPLECNT} samples"
+  
+elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
+
+  # Start program with tracing
+  ${VERB} && echo "cpuusage: starting program ${1}"
+  JSONPATH="${TMPDIR}/cutrace.json"
+  CU_FILE="${JSONPATH}" LD_PRELOAD="${LIBDIR}/libcpuusage.so" \
+    DYLD_INSERT_LIBRARIES="${LIBDIR}/libcpuusage.dylib" \
+    DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
+  CHILDPID="${!}"
+  wait ${CHILDPID}
+
+  # Save JSON if needed
+  if [ "${OUTJSONPATH}" != "" ]; then
+    cp ${JSONPATH} ${OUTJSONPATH}
+  fi
+
+  # Convert JSON trace to HTML
+  ${VERB} && echo "cpuusage: processing output trace"
+  if [ "${OUTPATH}" == "" ]; then
+    OUTPATH="./cutrace-${CHILDPID}.html"
+  fi
+  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+
+  SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
+  ${VERB} && echo "cpuusage: completed processing ${SAMPLECNT} samples"
+
+else
+
+  echo "cpuusage: error, no mode specified."
+  exit 1
+
+fi
+
+# Cleanup
+rm -rf ${TMPDIR}
+
+exit 0
+

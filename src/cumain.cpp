@@ -80,12 +80,12 @@ void __attribute__ ((destructor)) cu_fini(void)
 
 extern "C"
 {
-void __cyg_profile_func_enter(void *func, void *caller)
+void __cyg_profile_func_enter(void *func, void * /*caller*/)
 {
   cu_log_event(func, true);
 }
 
-void __cyg_profile_func_exit(void *func, void *caller)
+void __cyg_profile_func_exit(void *func, void * /*caller*/)
 {
   cu_log_event(func, false);
 }
@@ -153,7 +153,7 @@ static inline void cu_log_event(void *func, bool enter)
   // store sample, update sample count, and check upper limit
   samples->push_back(sample);
   ++count_samples;
-  if (count_samples > max_samples) tracing_enabled = false;
+  if (count_samples >= max_samples) tracing_enabled = false;
 
   // release spin lock
   samples_lock.clear(std::memory_order_release);

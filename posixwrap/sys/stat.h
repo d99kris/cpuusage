@@ -1,0 +1,16 @@
+int    chmod(const char *a, mode_t b);
+int    fchmod(int a, mode_t b);
+int    fchmodat(int a, const char *b, mode_t c, int d);
+int    fstat(int a, struct stat *b);
+int    fstatat(int a, const char *restrict b, struct stat *restrict c, int d);
+int    futimens(int a, const struct timespec b[2]);
+int    lstat(const char *restrict a, struct stat *restrict b);
+int    mkdir(const char *a, mode_t b);
+int    mkdirat(int a, const char *b, mode_t c);
+int    mkfifo(const char *a, mode_t b);
+int    mkfifoat(int a, const char *b, mode_t c);
+int    mknod(const char *a, mode_t b, dev_t c);
+int    mknodat(int a, const char *b, mode_t c, dev_t d);
+int    stat(const char *restrict a, struct stat *restrict b);
+mode_t umask(mode_t a);
+int    utimensat(int a, const char *b, const struct timespec c[2], int d);

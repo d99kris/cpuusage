@@ -1,134 +1,144 @@
 Cpuusage
 ========
-Cpuusage is a simple instrumentation CPU profiler for Linux and macOS applications.
-By using compiler intrumentation (-finstrument-functions) it enables capturing start and end of function
-calls. A JSON logging format compatible with
-[Chromium Catapult](https://github.com/catapult-project/catapult) is used, enabling nice visualization
-of the captured data.
+Cpuusage is an instrumentation CPU profiler for Linux applications.
+It provides logging of standard POSIX function calls for any application, and logging of
+internal function calls for programs compiled with -finstrument-functions.
+The logging output format is a HTML-file generated using 
+[Chromium Catapult](https://github.com/catapult-project/catapult).
+
+Example Usage
+=============
+Tracing all POSIX function calls from a regular (non-instrumented) application:
+
+    $ cpuusage -v -o cutrace1.html -a ./build/cutest1 
+    cpuusage: https://github.com/d99kris/cpuusage
+    cpuusage: initializing
+    cpuusage: starting program ./build/cutest1
+    cpuusage: processing output trace
+    cpuusage: completed processing 96 samples
+    $ xdg-open cutrace1.html 
+
+Resulting visualization:
+![culog1 screenshot](/doc/culog1.png)
 
 Supported Platforms
 ===================
-Cpuusage is primarily developed and tested on Linux, but basic
-functionality should work in macOS / OS X as well. Current version has been tested on:
-- OS X El Capitan 10.11
-- Ubuntu 16.04 LTS
+Heapusage is primarily developed and tested on Linux.
 
-Usages
-======
-Tracing Standard Function Calls
--------------------------------
-Without making any changes to an existing application is it possible to trace its calls to a specified
-set of function calls. The header file
-[examples/exwrapper.h](https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
-provides an example of a listing required to trace specified functions. By using the provided code
-generation tool
-[src/genwrapper.py](https://github.com/d99kris/cpuusage/blob/master/src/genwrapper.py) one can
-generate a C file with the corresponding wrapper function bodies. The final step is to build a library of
-these files and preload it at program start.
-Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
-"cutest1" for how it can be done in cmake.
-
-With wrapper header
-[examples/exwrapper.h](https://github.com/d99kris/cpuusage/blob/master/examples/exwrapper.h)
-and test program
-[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
-the output may look like this:
-![culog1 screenshot](/doc/culog1.png)
-
-The actual
-[Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog1.html)
-(right-click and save locally before opening, as GitHub blocks Javascript content)
-and corresponding
-[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog1.json)
-can be accessed for better understanding of the detailed log data provided.
-
-Tracing an Applications Internal Calls
---------------------------------------
-To trace the timing of an applications internal calls one need to recompile the application with 
-"-rdynamic -finstrument-functions". One can compile with instrumentation enabled on a file-by-file basis.
-Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
-"cutest2" for how it can be done in cmake.
-
-For the test program
-[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
-the output may look like this:
-![culog2 screenshot](/doc/culog2.png)
-
-The actual
-[Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog2.html)
-(right-click and save locally before opening, as GitHub blocks Javascript content)
-and corresponding
-[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog2.json)
-can be accessed for better understanding of the detailed log data provided.
-
-Tracing Standard Function Calls + Applications Internal Calls
--------------------------------------------------------------
-This is essentially a combination of the options above, in which both a set of external function calls
-are being traced in addition to application internal calls.
-Refer to [CMakeLists.txt](https://github.com/d99kris/cpuusage/blob/master/CMakeLists.txt) example
-"cutest3" for how it can be done in cmake.
-
-For the test program
-[examples/cutest.c](https://github.com/d99kris/cpuusage/blob/master/examples/cutest.c)
-the output may look like this:
-![culog3 screenshot](/doc/culog3.png)
-
-The actual
-[Catapult generated HTML log](https://raw.githubusercontent.com/d99kris/cpuusage/master/doc/culog3.html)
-(right-click and save locally before opening, as GitHub blocks Javascript content)
-and corresponding
-[JSON log data](https://github.com/d99kris/cpuusage/blob/master/doc/culog3.json)
-can be accessed for better understanding of the detailed log data provided.
-
-Usage
-=====
+Installation
+============
 Pre-requisites (Ubuntu):
 
-    sudo apt install git cmake build-essential
+    sudo apt install git cmake build-essential python-lxml
 
 Download the source code:
 
     git clone https://github.com/d99kris/cpuusage && cd cpuusage
 
-Build and run examples:
+Generate Makefile and build:
 
-    ./run-examples.sh
-    
-Detailed Usage
-==============
-The run-time configuration of cpuusage is done using environment variables.
+    mkdir -p build && cd build && cmake .. && make -s
 
-CU_FILE
--------
-This environment variable determines the path and filename of the output JSON trace file. If not
-specified the default output log name is culog-<PID>.json.
+Optionally install in system:
 
-CU_MANUAL
----------
-If this environment variable is set to "1", tracing is not automatically started at program startup, but
-rather requires manual start/stop by sending below signals to the relevant process:
+    sudo make install
 
-    kill -SIGUSR1 `pidof myprogram`  # starts tracing
-    kill -SIGUSR2 `pidof myprogram`  # stops tracing
+Usage
+=====
 
-CU_MAX_SAMPLES
---------------
-By default the maximum number of samples is 1000000. Once this number of samples have been collected, the
-tracing is automatically disabled. This number also controls the amount of memory allocated upfront by
-cpuusage.
+General syntax:
+
+    cpuusage -a [OPTIONS] PROG [ARGS..]
+    cpuusage -c [OPTIONS] PROG [ARGS..]
+    cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]
+    cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]
+    cpuusage --help|-h
+    cpuusage --version|-v
+
+Options:
+
+    -a     trace all standard POSIX function calls
+
+    -c     trace internal function calls (requires PROG to be compiled with
+           -finstrument-functions)
+
+    -f <FUNCTIONS>
+           trace specified POSIX functions
+
+    -i <INCLUDES>
+           trace functions in specified POSIX headers
+
+    --help, -h
+           display this help and exit
+
+    --version, -v
+           output version information and exit
+
+    -j <PATH>
+           write iterim JSON trace log to specified path
+
+    -m <SAMPLES>
+           only log up to specified number of samples
+
+    -o <PATH>
+           write  HTML  report  to  specified  path,  rather  than  default
+           ./cutrace-PID.html
+
+    -v     verbose mode
+
+    PROG   program to run and profile
+
+    [ARGS] optional arguments to the program
+
+More Examples
+=============
+*Tracing specified POSIX function calls from a regular (non-instrumented) application:*
+
+    $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./build/cutest1 
+    cpuusage: https://github.com/d99kris/cpuusage
+    cpuusage: initializing
+    cpuusage: starting program ./build/cutest1
+    cpuusage: processing output trace
+    cpuusage: completed processing 36 samples
+    $ xdg-open cutrace2.html 
+
+Resulting visualization:
+![culog2 screenshot](/doc/culog2.png)
+
+*Tracing internal function calls in an instrumented application:*
+
+    $ cpuusage -v -o cutrace3.html -c ./build/cutest2
+    cpuusage: https://github.com/d99kris/cpuusage
+    cpuusage: initializing
+    cpuusage: starting program ./build/cutest2
+    cpuusage: processing output trace
+    cpuusage: completed processing 8 samples
+    $ xdg-open cutrace3.html 
+
+Resulting visualization:
+![culog3 screenshot](/doc/culog3.png)
+
+*Tracing internal function calls and all external POSIX function calls in an instrumented application:*
+
+    $ cpuusage -v -o cutrace4.html -c -a ./build/cutest2
+    cpuusage: https://github.com/d99kris/cpuusage
+    cpuusage: initializing
+    cpuusage: starting program ./build/cutest2
+    cpuusage: processing output trace
+    cpuusage: completed processing 104 samples
+    $ xdg-open cutrace4.html 
+
+Resulting visualization:
+![culog4 screenshot](/doc/culog4.png)
 
 Alternatives
 ============
-There are many profilers available for Linux and macOS, here are some of them:
-- callgrind
-- gperftools
-- gprof
-
-Limitations
-===========
-Some known limitations:
-- The following functions are used by cpuusage logger internally, and cannot be wrapped/instrumented for logging: gettimeofday(), pthread_self().
-- In order to get function names when tracing an applications internal calls on Linux, the functions need to be public / non-static.
+There are many CPU profilers available for Linux and macOS. Most of them are sample-based, and here
+is a list of some of them:
+- Gperftools
+- Gprof
+- Valgrind - Callgrind
+- Instruments - Time Profiler (Mac only)
 
 License
 =======
@@ -136,5 +146,5 @@ Cpuusage is distributed under the BSD 3-Clause license. See LICENSE file.
 
 Keywords
 ========
-linux, macos, os x, cpu usage, profiler, performance.
+linux, macos, os x, cpu usage, instrumented profiler, alternative to callgrind.
 
