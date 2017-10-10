@@ -60,8 +60,8 @@ target_link_libraries(ex002 pthread)
 # Tests
 enable_testing()
 
-configure_file(tests/test001 ${CMAKE_CURRENT_BINARY_DIR}/test001 COPYONLY)
-add_test(test001 "${PROJECT_BINARY_DIR}/test001")
+#configure_file(tests/test001 ${CMAKE_CURRENT_BINARY_DIR}/test001 COPYONLY)
+#add_test(test001 "${PROJECT_BINARY_DIR}/test001")
 
 configure_file(tests/test002 ${CMAKE_CURRENT_BINARY_DIR}/test002 COPYONLY)
 add_test(test002 "${PROJECT_BINARY_DIR}/test002")
