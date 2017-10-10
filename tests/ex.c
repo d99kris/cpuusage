@@ -1,5 +1,5 @@
 /*
- * cutest01.c
+ * ex.c
  *
  * Copyright (C) 2017 Kristofer Berggren
  * All rights reserved.

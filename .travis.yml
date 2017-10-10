@@ -1,0 +1,22 @@
+language:
+  - cpp
+
+sudo:
+  - required
+
+os:
+  - linux
+
+install:
+  - if [ $TRAVIS_OS_NAME = linux ]; then
+      sudo apt update;
+      sudo apt -y install python-lxml
+    fi
+
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - make
+  - ctest --output-on-failure
+

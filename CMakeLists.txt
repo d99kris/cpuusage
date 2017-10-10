@@ -48,12 +48,21 @@ target_link_libraries(${PROJECT_NAME} dl)
 target_link_libraries(${PROJECT_NAME}static dl)
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
-# Example - cutest1 - regular program / non-instrumented
-add_executable(cutest1 tests/cutest.c)
-target_link_libraries(cutest1 pthread)
+# Example - ex001 - regular program / non-instrumented
+add_executable(ex001 tests/ex.c)
+target_link_libraries(ex001 pthread)
 
 # Example - cutest2 - instrumented
-add_executable(cutest2 tests/cutest.c)
-set_target_properties(cutest2 PROPERTIES COMPILE_FLAGS "-rdynamic -finstrument-functions")
-target_link_libraries(cutest2 pthread)
+add_executable(ex002 tests/ex.c)
+set_target_properties(ex002 PROPERTIES COMPILE_FLAGS "-rdynamic -finstrument-functions")
+target_link_libraries(ex002 pthread)
+
+# Tests
+enable_testing()
+
+configure_file(tests/test001 ${CMAKE_CURRENT_BINARY_DIR}/test001 COPYONLY)
+add_test(test001 "${PROJECT_BINARY_DIR}/test001")
+
+configure_file(tests/test002 ${CMAKE_CURRENT_BINARY_DIR}/test002 COPYONLY)
+add_test(test002 "${PROJECT_BINARY_DIR}/test002")
 

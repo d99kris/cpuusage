@@ -1,5 +1,10 @@
 Cpuusage
 ========
+
+| **Linux** |
+|-----------|
+| [![Build status](https://travis-ci.org/d99kris/cpuusage.svg?branch=master)](https://travis-ci.org/d99kris/cpuusage) |
+
 Cpuusage is an instrumentation CPU profiler for Linux applications.
 It provides logging of standard POSIX function calls for any application, and logging of
 internal function calls for programs compiled with -finstrument-functions.
@@ -10,10 +15,10 @@ Example Usage
 =============
 Tracing all POSIX function calls from a regular (non-instrumented) application:
 
-    $ cpuusage -v -o cutrace1.html -a ./build/cutest1 
+    $ cpuusage -v -o cutrace1.html -a ./ex001 
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
-    cpuusage: starting program ./build/cutest1
+    cpuusage: starting program ./ex001
     cpuusage: processing output trace
     cpuusage: completed processing 96 samples
     $ xdg-open cutrace1.html 
@@ -94,10 +99,10 @@ More Examples
 =============
 **Tracing specified POSIX function calls from a regular (non-instrumented) application:**
 
-    $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./build/cutest1 
+    $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./ex001 
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
-    cpuusage: starting program ./build/cutest1
+    cpuusage: starting program ./ex001
     cpuusage: processing output trace
     cpuusage: completed processing 36 samples
     $ xdg-open cutrace2.html 
@@ -107,10 +112,10 @@ Resulting visualization:
 
 **Tracing internal function calls in an instrumented application:**
 
-    $ cpuusage -v -o cutrace3.html -c ./build/cutest2
+    $ cpuusage -v -o cutrace3.html -c ./ex002
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
-    cpuusage: starting program ./build/cutest2
+    cpuusage: starting program ./ex002
     cpuusage: processing output trace
     cpuusage: completed processing 8 samples
     $ xdg-open cutrace3.html 
@@ -120,10 +125,10 @@ Resulting visualization:
 
 **Tracing internal function calls and all external POSIX function calls in an instrumented application:**
 
-    $ cpuusage -v -o cutrace4.html -c -a ./build/cutest2
+    $ cpuusage -v -o cutrace4.html -c -a ./ex002
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
-    cpuusage: starting program ./build/cutest2
+    cpuusage: starting program ./ex002
     cpuusage: processing output trace
     cpuusage: completed processing 104 samples
     $ xdg-open cutrace4.html 
