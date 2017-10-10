@@ -10,7 +10,7 @@ os:
 install:
   - if [ $TRAVIS_OS_NAME = linux ]; then
       sudo apt update;
-      sudo apt -y install python-lxml
+      sudo apt -y install python-lxml;
     fi
 
 script:
