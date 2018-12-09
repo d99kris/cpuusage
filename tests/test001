@@ -19,6 +19,8 @@ LINE=$(cat ${TMPDIR}/out.txt | head -1 | tail -1)
 EXPT="cpuusage: https://github.com/d99kris/cpuusage"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  echo "Full test output:"
+  cat ${TMPDIR}/out.txt
   RV=1
 fi
 
@@ -26,6 +28,8 @@ LINE=$(cat ${TMPDIR}/out.txt | head -2 | tail -1)
 EXPT="cpuusage: initializing"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  echo "Full test output:"
+  cat ${TMPDIR}/out.txt
   RV=1
 fi
 
@@ -33,6 +37,8 @@ LINE=$(cat ${TMPDIR}/out.txt | head -3 | tail -1)
 EXPT="cpuusage: starting program ./ex001"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  echo "Full test output:"
+  cat ${TMPDIR}/out.txt
   RV=1
 fi
 
@@ -40,6 +46,8 @@ LINE=$(cat ${TMPDIR}/out.txt | head -4 | tail -1)
 EXPT="cpuusage: processing output trace"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  echo "Full test output:"
+  cat ${TMPDIR}/out.txt
   RV=1
 fi
 
@@ -47,6 +55,8 @@ LINE=$(cat ${TMPDIR}/out.txt | head -5 | tail -1)
 EXPT="cpuusage: completed processing 36 samples"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  echo "Full test output:"
+  cat ${TMPDIR}/out.txt
   RV=1
 fi
 
