@@ -57,6 +57,7 @@ General syntax:
     cpuusage -c [OPTIONS] PROG [ARGS..]
     cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]
     cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]
+    cpuusage -r JSONFILE [OPTIONS]
     cpuusage --help|-h
     cpuusage --version|-v
 
@@ -66,6 +67,8 @@ Options:
 
     -c     trace internal function calls (requires PROG to be compiled with
            -finstrument-functions)
+
+    -d     debug mode, running program through debugger
 
     -f <FUNCTIONS>
            trace specified POSIX functions
@@ -88,6 +91,12 @@ Options:
     -o <PATH>
            write  HTML  report  to  specified  path,  rather  than  default
            ./cutrace-PID.html
+
+    -r <JSONFILE>
+           read JSON file and convert to HTML report
+
+    -s     start tracing with SIGUSR1 and stop with SIGUSR2, instead of
+           trace from process start
 
     -v     verbose mode
 

@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Environment
+RV=0
+TMPDIR=$(mktemp -d)
+BUILDDIR=$(pwd)
+pushd ${TMPDIR} > /dev/null
+
+# Run application
+${BUILDDIR}/ex003
+${BUILDDIR}/bin/cpuusage -v -r culog.json &> ${TMPDIR}/out.txt
+
+# Expected
+# cpuusage: https://github.com/d99kris/cpuusage
+# cpuusage: initializing
+# cpuusage: starting program ./ex002
+# cpuusage: processing output trace
+# cpuusage: completed processing 8 samples
+
+# Check result
+LINE=$(cat ${TMPDIR}/out.txt | head -1 | tail -1)
+EXPT="cpuusage: https://github.com/d99kris/cpuusage"
+if [ "${LINE}" != "${EXPT}" ]; then
+  echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  RV=1
+fi
+
+LINE=$(cat ${TMPDIR}/out.txt | head -2 | tail -1)
+EXPT="cpuusage: initializing"
+if [ "${LINE}" != "${EXPT}" ]; then
+  echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  RV=1
+fi
+
+LINE=$(cat ${TMPDIR}/out.txt | head -3 | tail -1)
+EXPT="cpuusage: reading file culog.json"
+if [ "${LINE}" != "${EXPT}" ]; then
+  echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  RV=1
+fi
+
+LINE=$(cat ${TMPDIR}/out.txt | head -4 | tail -1)
+EXPT="cpuusage: processing output trace"
+if [ "${LINE}" != "${EXPT}" ]; then
+  echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  RV=1
+fi
+
+LINE=$(cat ${TMPDIR}/out.txt | head -5 | tail -1)
+EXPT="cpuusage: completed processing 8 samples"
+if [ "${LINE}" != "${EXPT}" ]; then
+  echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
+  RV=1
+fi
+
+# Cleanup
+popd > /dev/null
+rm -rf ${TMPDIR}
+
+# Exit
+exit ${RV}
+

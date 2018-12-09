@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2017 Kristofer Berggren
+# Copyright (C) 2017-2018 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
@@ -18,6 +18,7 @@ showusage()
   echo "   or: cpuusage -c [OPTIONS] PROG [ARGS..]"
   echo "   or: cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]"
   echo "   or: cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage -r JSONFILE [OPTIONS]"
   echo "   or: cpuusage --help|-h"
   echo "   or: cpuusage --version|-v"
   echo ""
@@ -31,10 +32,14 @@ showusage()
   echo "   --version, -v   output version information and exit"
   echo ""
   echo "Options:"
+  echo "   -d              debug mode, running program through debugger"
   echo "   -j <PATH>       write iterim JSON trace log to specified path"
   echo "   -m <SAMPLES>    only log up to specified number of samples"
   echo "   -o <PATH>       write HTML report to specified path, rather"
   echo "                   than default ./cutrace-PID.html"
+  echo "   -r <JSONFILE>   read JSON file and convert to HTML report"
+  echo "   -s              start tracing with SIGUSR1 and stop with"
+  echo "                   SIGUSR2, instead of trace from process start"
   echo "   -v              verbose mode"
   echo "   PROG            program to run and profile"
   echo "   [ARGS]          optional arguments to the program"
@@ -63,9 +68,9 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.1"
+  echo "cpuusage v1.2"
   echo ""
-  echo "Copyright (C) 2017 Kristofer Berggren"
+  echo "Copyright (C) 2017-2018 Kristofer Berggren"
   echo ""
   echo "cpuusage is distributed under the BSD 3-Clause license."
   echo ""
@@ -86,13 +91,16 @@ fi
 
 # Arguments - regular options
 ALL="0"
+AUTO="1"
+DEBUG="0"
 FUNCS=""
 INCS=""
 INSTR="0"
 OUTPATH=""
 OUTJSONPATH=""
+READ=""
 VERB="false"
-while getopts "?acf:i:j:m:o:p:v" OPT; do
+while getopts "?acdf:i:j:m:o:p:r:sv" OPT; do
   case "${OPT}" in
   \?)
     showusage
@@ -103,6 +111,9 @@ while getopts "?acf:i:j:m:o:p:v" OPT; do
     ;;
   c)
     INSTR="1"
+    ;;
+  d)
+    DEBUG="1"
     ;;
   f)
     FUNCS="${OPTARG}"
@@ -120,6 +131,12 @@ while getopts "?acf:i:j:m:o:p:v" OPT; do
   o)
     OUTPATH="${OPTARG}"
     ;;
+  r)
+    READ="${OPTARG}"
+    ;;
+  s)
+    AUTO="0"
+    ;;
   v)
     VERB="true"
     ;;
@@ -128,8 +145,8 @@ done
 shift $((OPTIND-1))
 [ "$1" = "--" ] && shift
 
-# Arguments - ensure program specified
-if [ "${#}" == "0" ] ; then
+# Arguments - ensure program specified, or in read mode
+if [[ "${#}" == "0" ]] && [[ "${READ}" == "" ]] ; then
   showusage
   exit 1
 fi
@@ -198,6 +215,12 @@ elif [ "${INSTR}" == "1" ]; then
   ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
   ${VERB} && echo "cpuusage: initializing"
   touch "${TMPDIR}/nowrappers.txt"  
+
+# Read (-r) Mode
+elif [ "${READ}" != "" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch "${TMPDIR}/read.txt"  
 fi
 
 
@@ -229,12 +252,30 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   # Start program with tracing
   ${VERB} && echo "cpuusage: starting program ${1}"
   JSONPATH="${TMPDIR}/cutrace.json"
-  CU_FILE="${JSONPATH}" LD_PRELOAD="${TMPDIR}/build/libwrapper.so" \
-    DYLD_INSERT_LIBRARIES="${TMPDIR}/build/libwrapper.dylib" \
-    DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
-  CHILDPID="${!}"
-  wait ${CHILDPID}
+  if [ "${DEBUG}" == "0" ]; then
+    CU_FILE="${JSONPATH}" CU_AUTO="${AUTO}" \
+      LD_PRELOAD="${TMPDIR}/build/libwrapper.so" \
+      DYLD_INSERT_LIBRARIES="${TMPDIR}/build/libwrapper.dylib" \
+      DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
+    CHILDPID="${!}"
+    wait ${CHILDPID}
+  else
+    LLDBCMDPATH="${TMPDIR}/lldb.cmd"
+    echo "env CU_FILE=\"${JSONPATH}\""                                      >  "${LLDBCMDPATH}"
+    echo "env CU_AUTO=\"${AUTO}\""                                          >> "${LLDBCMDPATH}"
+    echo "env LD_PRELOAD=\"${TMPDIR}/build/libwrapper.so\""                 >> "${LLDBCMDPATH}"
+    echo "env DYLD_INSERT_LIBRARIES=\"${TMPDIR}/build/libwrapper.dylib\""   >> "${LLDBCMDPATH}"
+    echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
+    echo "run ${@:2}"                                                       >> "${LLDBCMDPATH}"
+    lldb "${1}" -s "${LLDBCMDPATH}"
+    CHILDPID="dbg"
+  fi
 
+  if [ ! -f "${JSONPATH}" ]; then
+    echo "cpuusage: error, json log data not created."
+    exit 1
+  fi
+  
   # Save JSON if needed
   if [ "${OUTJSONPATH}" != "" ]; then
     cp ${JSONPATH} ${OUTJSONPATH}
@@ -248,18 +289,36 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
-  ${VERB} && echo "cpuusage: completed processing ${SAMPLECNT} samples"
+  ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
   
 elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
 
   # Start program with tracing
   ${VERB} && echo "cpuusage: starting program ${1}"
   JSONPATH="${TMPDIR}/cutrace.json"
-  CU_FILE="${JSONPATH}" LD_PRELOAD="${LIBDIR}/libcpuusage.so" \
-    DYLD_INSERT_LIBRARIES="${LIBDIR}/libcpuusage.dylib" \
-    DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
-  CHILDPID="${!}"
-  wait ${CHILDPID}
+  if [ "${DEBUG}" == "0" ]; then
+    CU_FILE="${JSONPATH}" CU_AUTO="${AUTO}" \
+      LD_PRELOAD="${LIBDIR}/libcpuusage.so" \
+      DYLD_INSERT_LIBRARIES="${LIBDIR}/libcpuusage.dylib" \
+      DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
+    CHILDPID="${!}"
+    wait ${CHILDPID}
+  else
+    LLDBCMDPATH="${TMPDIR}/lldb.cmd"
+    echo "env CU_FILE=\"${JSONPATH}\""                                      >  "${LLDBCMDPATH}"
+    echo "env CU_AUTO=\"${AUTO}\""                                          >> "${LLDBCMDPATH}"
+    echo "env LD_PRELOAD=\"${LIBDIR}/libcpuusage.so\""                      >> "${LLDBCMDPATH}"
+    echo "env DYLD_INSERT_LIBRARIES=\"${LIBDIR}/libcpuusage.dylib\""        >> "${LLDBCMDPATH}"
+    echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
+    echo "run ${@:2}"                                                       >> "${LLDBCMDPATH}"
+    lldb "${1}" -s "${LLDBCMDPATH}"
+    CHILDPID="dbg"
+  fi
+
+  if [ ! -f "${JSONPATH}" ]; then
+    echo "cpuusage: error, json log data not created."
+    exit 1
+  fi
 
   # Save JSON if needed
   if [ "${OUTJSONPATH}" != "" ]; then
@@ -274,7 +333,29 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
   python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
-  ${VERB} && echo "cpuusage: completed processing ${SAMPLECNT} samples"
+  ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
+
+elif [ -f "${TMPDIR}/read.txt" ]; then
+
+  # Set up JSON input path
+  JSONPATH="${READ}"
+  ${VERB} && echo "cpuusage: reading file ${JSONPATH}"
+
+  # Save JSON if needed
+  if [ "${OUTJSONPATH}" != "" ]; then
+    cp ${JSONPATH} ${OUTJSONPATH}
+  fi
+
+  # Convert JSON trace to HTML
+  ${VERB} && echo "cpuusage: processing output trace"
+  if [ "${OUTPATH}" == "" ]; then
+    CHILDPID=$(grep "\"pid\"" ${JSONPATH} | head -1 | sed "s/\"/,/g" | cut -d, -f14)
+    OUTPATH="./cutrace-${CHILDPID}.html"
+  fi
+  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+
+  SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
+  ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
 
 else
 

@@ -61,15 +61,15 @@ static std::string cu_addr_to_symbol(void *addr);
 /* ----------- Global Functions ---------------------------------- */
 void __attribute__ ((constructor)) cu_init(void)
 {
-  char *manual = getenv("CU_MANUAL");
+  char *manual = getenv("CU_AUTO");
   if ((manual != NULL) && (strncmp(manual, "1", 1) == 0))
   {
-    signal(SIGUSR1, cu_start_tracing);
-    signal(SIGUSR2, cu_stop_tracing);
+    cu_start_tracing(0);
   }
   else
   {
-    cu_start_tracing(0);
+    signal(SIGUSR1, cu_start_tracing);
+    signal(SIGUSR2, cu_stop_tracing);
   }
 }
 
@@ -88,6 +88,36 @@ void __cyg_profile_func_enter(void *func, void * /*caller*/)
 void __cyg_profile_func_exit(void *func, void * /*caller*/)
 {
   cu_log_event(func, false);
+}
+
+void cu_start_tracing()
+{
+  cu_start_tracing(0);
+}
+
+void cu_stop_tracing()
+{
+  cu_stop_tracing(0);
+}
+    
+void cu_start_event_sym(void* sym_addr)
+{
+  cu_log_event(sym_addr, true);
+}
+
+void cu_end_event_sym(void* sym_addr)
+{
+  cu_log_event(sym_addr, false);
+}
+
+void cu_start_event(void)
+{
+  cu_log_event(__builtin_return_address(0), true);
+}
+
+void cu_end_event(void)
+{
+  cu_log_event(__builtin_return_address(0), false);
 }
 }
 
@@ -206,7 +236,7 @@ static void cu_trace_report()
     std::string name = cu_addr_to_symbol(sample.func);
 
     fprintf(outfile, "{ \"ph\":\"%c\", \"cat\":\"perf\", \"pid\":\"%d\", "
-            "\"tid\":\"%p\", \"name\":\"%s\", \"ts\":%ld }",
+            "\"tid\":\"%p\", \"name\":\"%s\", \"ts\":%" PRId64 " }",
             type, pid, (void*)sample.thread, name.c_str(), sample.ts);
   }
 

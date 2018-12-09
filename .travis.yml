@@ -6,6 +6,7 @@ sudo:
 
 os:
   - linux
+  - osx
 
 install:
   - if [ $TRAVIS_OS_NAME = linux ]; then

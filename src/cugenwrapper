@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (C) 2017 Kristofer Berggren
+# Copyright (C) 2017-2018 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
@@ -98,7 +98,20 @@ def genwrapper(infilepath, outfilepath):
                     lin_wrapbody += "}\n\n";
                     
                 osx_wrapdecl += rtype + "wrap_" + name + "(" + args + ");\n"
-                osx_wrapbody += rtype + "wrap_" + name + "(" + args + ")\n{\n  " + rcall + name + "(" + callargs + ");\n}\n" + "DYLD_INTERPOSE(wrap_" + name + ", " + name + ");\n\n"
+                osx_wrapbody += rtype + "wrap_" + name + "(" + args + ")\n{\n"
+
+                osx_wrapbody += precall
+                if rcall != "":
+                    osx_wrapbody += "  " + rtype + " rv = " + name + "(" + callargs + ");\n"
+                else:
+                    osx_wrapbody += "  " + name + "(" + callargs + ");\n"                     
+                osx_wrapbody += postcall
+                if rcall != "":
+                    osx_wrapbody += "  return rv;\n"
+                else:
+                    osx_wrapbody += "  return;\n"
+
+                osx_wrapbody += "} DYLD_INTERPOSE(wrap_" + name + ", " + name + ");\n\n"
 
     outfile.write(headers + "\n")
 
