@@ -9,7 +9,7 @@ os:
   - osx
 
 install:
-  - sudo pip install lxml
+  - sudo pip install lxml html5lib
 
 script:
   - mkdir -p build
