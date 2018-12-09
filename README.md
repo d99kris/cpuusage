@@ -1,8 +1,8 @@
 Cpuusage
 ========
 
-| **Linux** |
-|-----------|
+| **Linux + Mac** |
+|-----------------|
 | [![Build status](https://travis-ci.org/d99kris/cpuusage.svg?branch=master)](https://travis-ci.org/d99kris/cpuusage) |
 
 Cpuusage is an instrumentation CPU profiler for Linux applications.
