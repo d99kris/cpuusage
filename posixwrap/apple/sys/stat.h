@@ -1,0 +1,12 @@
+int    chmod(const char *a, mode_t b);
+int    fchmod(int a, mode_t b);
+int    fchmodat(int a, const char *b, mode_t c, int d);
+int    fstat(int a, struct stat *b);
+int    fstatat(int a, const char *restrict b, struct stat *restrict c, int d);
+int    lstat(const char *restrict a, struct stat *restrict b);
+int    mkdir(const char *a, mode_t b);
+int    mkdirat(int a, const char *b, mode_t c);
+int    mkfifo(const char *a, mode_t b);
+int    mknod(const char *a, mode_t b, dev_t c);
+int    stat(const char *restrict a, struct stat *restrict b);
+mode_t umask(mode_t a);

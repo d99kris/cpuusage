@@ -6,12 +6,10 @@ sudo:
 
 os:
   - linux
+  - osx
 
 install:
-  - if [ $TRAVIS_OS_NAME = linux ]; then
-      sudo apt update;
-      sudo apt -y install python-lxml;
-    fi
+  - sudo pip install lxml html5lib
 
 script:
   - mkdir -p build
@@ -19,4 +17,3 @@ script:
   - cmake ..
   - make
   - ctest --output-on-failure
-

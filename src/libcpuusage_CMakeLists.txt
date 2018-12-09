@@ -19,5 +19,6 @@ target_link_libraries(${PROJECT_NAME}static dl)
 
 # wrapper library
 add_library(wrapper SHARED wrapper.c)
+set_property(TARGET wrapper PROPERTY C_STANDARD 99)
 target_link_libraries(wrapper cpuusagestatic dl)
 set_target_properties(wrapper PROPERTIES COMPILE_FLAGS "-finstrument-functions")

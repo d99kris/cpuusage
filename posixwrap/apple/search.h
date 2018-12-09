@@ -1,0 +1,10 @@
+int    hcreate(size_t a);
+void   hdestroy(void);
+void   insque(void *a, void *b);
+//unsupported (incompatible pointer): void  *lfind(const void *a, const void *b, size_t *c, size_t d, int (*e)(const void *, const void *));
+//unsupported (incompatible pointer): void  *lsearch(const void *a, void *b, size_t *c, size_t d, int (*e)(const void *, const void *));
+void   remque(void *a);
+//unsupported (incompatible pointer): void  *tdelete(const void *restrict a, void **restrict b, int(*c)(const void *, const void *));
+//unsupported (incompatible pointer): void  *tfind(const void *a, void *const *b, int(*c)(const void *, const void *));
+//unsupported (incompatible pointer): void  *tsearch(const void *a, void **b, int(*c)(const void *, const void *));
+void   twalk(const void *a, void (*b)(const void *, VISIT, int ));

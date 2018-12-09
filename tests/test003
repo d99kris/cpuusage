@@ -3,9 +3,12 @@
 # Environment
 RV=0
 TMPDIR=$(mktemp -d)
+BUILDDIR=$(pwd)
+pushd ${TMPDIR} > /dev/null
 
 # Run application
-./bin/cpuusage -v -o out.html -c ./ex002 &> ${TMPDIR}/out.txt
+${BUILDDIR}/ex003
+${BUILDDIR}/bin/cpuusage -v -r culog.json &> ${TMPDIR}/out.txt
 
 # Expected
 # cpuusage: https://github.com/d99kris/cpuusage
@@ -34,7 +37,7 @@ if [ "${LINE}" != "${EXPT}" ]; then
 fi
 
 LINE=$(cat ${TMPDIR}/out.txt | head -3 | tail -1)
-EXPT="cpuusage: starting program ./ex002"
+EXPT="cpuusage: reading file culog.json"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
   echo "Full test output:"
@@ -61,6 +64,7 @@ if [ "${LINE}" != "${EXPT}" ]; then
 fi
 
 # Cleanup
+popd > /dev/null
 rm -rf ${TMPDIR}
 
 # Exit
