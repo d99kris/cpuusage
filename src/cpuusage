@@ -68,9 +68,9 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.20"
+  echo "cpuusage v1.21"
   echo ""
-  echo "Copyright (C) 2017-2018 Kristofer Berggren"
+  echo "Copyright (C) 2017-2020 Kristofer Berggren"
   echo ""
   echo "cpuusage is distributed under the BSD 3-Clause license."
   echo ""
@@ -91,7 +91,7 @@ fi
 
 # Arguments - regular options
 ALL="0"
-AUTO="1"
+MANUAL="0"
 DEBUG="0"
 FUNCS=""
 INCS=""
@@ -135,7 +135,7 @@ while getopts "?acdf:i:j:m:o:p:r:sv" OPT; do
     READ="${OPTARG}"
     ;;
   s)
-    AUTO="0"
+    MANUAL="1"
     ;;
   v)
     VERB="true"
@@ -253,7 +253,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   ${VERB} && echo "cpuusage: starting program ${1}"
   JSONPATH="${TMPDIR}/cutrace.json"
   if [ "${DEBUG}" == "0" ]; then
-    CU_FILE="${JSONPATH}" CU_AUTO="${AUTO}" \
+    CU_FILE="${JSONPATH}" CU_MANUAL="${MANUAL}" \
       LD_PRELOAD="${TMPDIR}/build/libwrapper.so" \
       DYLD_INSERT_LIBRARIES="${TMPDIR}/build/libwrapper.dylib" \
       DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
@@ -262,7 +262,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   else
     LLDBCMDPATH="${TMPDIR}/lldb.cmd"
     echo "env CU_FILE=\"${JSONPATH}\""                                      >  "${LLDBCMDPATH}"
-    echo "env CU_AUTO=\"${AUTO}\""                                          >> "${LLDBCMDPATH}"
+    echo "env CU_MANUAL=\"${MANUAL}\""                                      >> "${LLDBCMDPATH}"
     echo "env LD_PRELOAD=\"${TMPDIR}/build/libwrapper.so\""                 >> "${LLDBCMDPATH}"
     echo "env DYLD_INSERT_LIBRARIES=\"${TMPDIR}/build/libwrapper.dylib\""   >> "${LLDBCMDPATH}"
     echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
@@ -297,7 +297,7 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
   ${VERB} && echo "cpuusage: starting program ${1}"
   JSONPATH="${TMPDIR}/cutrace.json"
   if [ "${DEBUG}" == "0" ]; then
-    CU_FILE="${JSONPATH}" CU_AUTO="${AUTO}" \
+    CU_FILE="${JSONPATH}" CU_MANUAL="${MANUAL}" \
       LD_PRELOAD="${LIBDIR}/libcpuusage.so" \
       DYLD_INSERT_LIBRARIES="${LIBDIR}/libcpuusage.dylib" \
       DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
@@ -306,7 +306,7 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
   else
     LLDBCMDPATH="${TMPDIR}/lldb.cmd"
     echo "env CU_FILE=\"${JSONPATH}\""                                      >  "${LLDBCMDPATH}"
-    echo "env CU_AUTO=\"${AUTO}\""                                          >> "${LLDBCMDPATH}"
+    echo "env CU_MANUAL=\"${MANUAL}\""                                      >> "${LLDBCMDPATH}"
     echo "env LD_PRELOAD=\"${LIBDIR}/libcpuusage.so\""                      >> "${LLDBCMDPATH}"
     echo "env DYLD_INSERT_LIBRARIES=\"${LIBDIR}/libcpuusage.dylib\""        >> "${LLDBCMDPATH}"
     echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"

@@ -61,20 +61,24 @@ static std::string cu_addr_to_symbol(void *addr);
 /* ----------- Global Functions ---------------------------------- */
 void __attribute__ ((constructor)) cu_init(void)
 {
-  char *manual = getenv("CU_AUTO");
+  if (getenv("LD_PRELOAD") == NULL) return;
+  
+  char *manual = getenv("CU_MANUAL");
   if ((manual != NULL) && (strncmp(manual, "1", 1) == 0))
-  {
-    cu_start_tracing(0);
-  }
-  else
   {
     signal(SIGUSR1, cu_start_tracing);
     signal(SIGUSR2, cu_stop_tracing);
+  }
+  else
+  {
+    cu_start_tracing(0);
   }
 }
 
 void __attribute__ ((destructor)) cu_fini(void)
 {
+  if (getenv("LD_PRELOAD") == NULL) return;
+
   cu_stop_tracing(0);
 }
 
