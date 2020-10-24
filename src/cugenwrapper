@@ -1,6 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
-# Copyright (C) 2017-2018 Kristofer Berggren
+# Copyright (C) 2017-2020 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
