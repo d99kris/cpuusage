@@ -155,6 +155,10 @@ sample-based, and here is a list of some of them:
 - Instruments - Time Profiler
 - Valgrind - Callgrind
 
+Technical Details
+=================
+Refer to [DESIGN.md](DESIGN.md) for design and implementation details.
+
 License
 =======
 Cpuusage is distributed under the BSD 3-Clause license. See LICENSE file.

@@ -68,7 +68,7 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.21"
+  echo "cpuusage v1.30"
   echo ""
   echo "Copyright (C) 2017-2020 Kristofer Berggren"
   echo ""
@@ -286,7 +286,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   if [ "${OUTPATH}" == "" ]; then
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
-  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
@@ -330,7 +330,7 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
   if [ "${OUTPATH}" == "" ]; then
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
-  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
@@ -352,7 +352,7 @@ elif [ -f "${TMPDIR}/read.txt" ]; then
     CHILDPID=$(grep "\"pid\"" ${JSONPATH} | head -1 | sed "s/\"/,/g" | cut -d, -f14)
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
-  python ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
