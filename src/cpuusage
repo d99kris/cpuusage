@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2017-2018 Kristofer Berggren
+# Copyright (C) 2017-2020 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
@@ -18,6 +18,7 @@ showusage()
   echo "   or: cpuusage -c [OPTIONS] PROG [ARGS..]"
   echo "   or: cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]"
   echo "   or: cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]"
+  echo "   or: cpuusage -p [OPTIONS] PROG [ARGS..]"
   echo "   or: cpuusage -r JSONFILE [OPTIONS]"
   echo "   or: cpuusage --help|-h"
   echo "   or: cpuusage --version|-v"
@@ -28,6 +29,7 @@ showusage()
   echo "                   be compiled with -finstrument-functions)"
   echo "   -f <FUNCTIONS>  trace specified POSIX functions"
   echo "   -i <INCLUDES>   trace functions in specified POSIX headers"
+  echo "   -p              trace child process durations"
   echo "   --help, -h      display this help and exit"
   echo "   --version, -v   output version information and exit"
   echo ""
@@ -41,6 +43,7 @@ showusage()
   echo "   -s              start tracing with SIGUSR1 and stop with"
   echo "                   SIGUSR2, instead of trace from process start"
   echo "   -v              verbose mode"
+  echo "   -y              auto-open resulting html file"
   echo "   PROG            program to run and profile"
   echo "   [ARGS]          optional arguments to the program"
   echo ""
@@ -68,7 +71,7 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.30"
+  echo "cpuusage v1.40"
   echo ""
   echo "Copyright (C) 2017-2020 Kristofer Berggren"
   echo ""
@@ -98,9 +101,11 @@ INCS=""
 INSTR="0"
 OUTPATH=""
 OUTJSONPATH=""
+PROC=""
 READ=""
 VERB="false"
-while getopts "?acdf:i:j:m:o:p:r:sv" OPT; do
+OPEN="0"
+while getopts "?acdf:i:j:m:o:pr:svy" OPT; do
   case "${OPT}" in
   \?)
     showusage
@@ -131,6 +136,9 @@ while getopts "?acdf:i:j:m:o:p:r:sv" OPT; do
   o)
     OUTPATH="${OPTARG}"
     ;;
+  p)
+    PROC="1"
+    ;;
   r)
     READ="${OPTARG}"
     ;;
@@ -139,6 +147,9 @@ while getopts "?acdf:i:j:m:o:p:r:sv" OPT; do
     ;;
   v)
     VERB="true"
+    ;;
+  y)
+    OPEN="1"
     ;;
   esac
 done
@@ -157,6 +168,18 @@ BINDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIBDIR="${BINDIR}/../lib"
 CUDIR="${BINDIR}/../share/cpuusage"
 WRAPDIR="${CUDIR}/posixwrap"
+
+# Commands
+OPENCMD=""
+if [[ "${OPEN}" == "1" ]]; then
+  if [[ "$(uname)" == "Linux" ]]; then
+    OPENCMD="xdg-open"
+  elif [[ "$(uname)" == "Darwin" ]]; then
+    OPENCMD="open -Wn"
+  else
+    echo "cpuusage: warning - unknown platform ($(uname)), auto-open disabled."
+  fi
+fi
 
 # Functions (-f) Mode
 if [ "${FUNCS}" != "" ]; then
@@ -221,6 +244,13 @@ elif [ "${READ}" != "" ]; then
   ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
   ${VERB} && echo "cpuusage: initializing"
   touch "${TMPDIR}/read.txt"  
+
+# Proc (-p) Mode
+elif [ "${PROC}" != "" ]; then
+  ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
+  ${VERB} && echo "cpuusage: initializing"
+  touch "${TMPDIR}/proc.txt"  
+
 fi
 
 
@@ -287,9 +317,14 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
   python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  RV="${?}"
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
+
+  if [[ "${RV}" == "0" ]] && [[ "${OPENCMD}" != "" ]]; then
+    ${OPENCMD} "${OUTPATH}" &
+  fi
   
 elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
 
@@ -331,9 +366,14 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
   python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  RV="${?}"
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
+
+  if [[ "${RV}" == "0" ]] && [[ "${OPENCMD}" != "" ]]; then
+    ${OPENCMD} "${OUTPATH}" &
+  fi
 
 elif [ -f "${TMPDIR}/read.txt" ]; then
 
@@ -353,9 +393,63 @@ elif [ -f "${TMPDIR}/read.txt" ]; then
     OUTPATH="./cutrace-${CHILDPID}.html"
   fi
   python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  RV="${?}"
 
   SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
   ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
+
+  if [[ "${RV}" == "0" ]] && [[ "${OPENCMD}" != "" ]]; then
+    ${OPENCMD} "${OUTPATH}" &
+  fi
+
+elif [ -f "${TMPDIR}/proc.txt" ]; then  # XXX: See if can make common with above nowrappers
+
+  # Start program with tracing
+  ${VERB} && echo "cpuusage: starting program ${1}"
+  JSONPATH="${TMPDIR}/cutrace.json"
+  #if [ "${DEBUG}" == "0" ]; then
+    CU_FILE="${JSONPATH}" CU_MANUAL="${MANUAL}" \
+      LD_PRELOAD="${LIBDIR}/libcpuusageproc.so" \
+      DYLD_INSERT_LIBRARIES="${LIBDIR}/libcpuusageproc.dylib" \
+      DYLD_FORCE_FLAT_NAMESPACE=1 "${@:1}" &
+    CHILDPID="${!}"
+    wait ${CHILDPID}
+  #else
+  #  LLDBCMDPATH="${TMPDIR}/lldb.cmd"
+  #  echo "env CU_FILE=\"${JSONPATH}\""                                      >  "${LLDBCMDPATH}"
+  #  echo "env CU_MANUAL=\"${MANUAL}\""                                      >> "${LLDBCMDPATH}"
+  #  echo "env LD_PRELOAD=\"${LIBDIR}/libcpuusage.so\""                      >> "${LLDBCMDPATH}"
+  #  echo "env DYLD_INSERT_LIBRARIES=\"${LIBDIR}/libcpuusage.dylib\""        >> "${LLDBCMDPATH}"
+  #  echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
+  #  echo "run ${@:2}"                                                       >> "${LLDBCMDPATH}"
+  #  lldb "${1}" -s "${LLDBCMDPATH}"
+  #  CHILDPID="dbg"
+  #fi
+
+  if [ ! -f "${JSONPATH}" ]; then
+    echo "cpuusage: error, json log data not created."
+    exit 1
+  fi
+
+  # Save JSON if needed
+  if [ "${OUTJSONPATH}" != "" ]; then
+    cp ${JSONPATH} ${OUTJSONPATH}
+  fi
+
+  # Convert JSON trace to HTML
+  ${VERB} && echo "cpuusage: processing output trace"
+  if [ "${OUTPATH}" == "" ]; then
+    OUTPATH="./cutrace-${CHILDPID}.html"
+  fi
+  python3 ${CUDIR}/catapult/tracing/bin/trace2html ${JSONPATH} --output="${OUTPATH}" > /dev/null
+  RV="${?}"
+
+  SAMPLECNT=$(grep '"cat":"perf"' ${JSONPATH} 2> /dev/null | wc -l)
+  ${VERB} && printf "cpuusage: completed processing %d samples\n" ${SAMPLECNT}
+
+  if [[ "${RV}" == "0" ]] && [[ "${OPENCMD}" != "" ]]; then
+    ${OPENCMD} "${OUTPATH}" &
+  fi
 
 else
 

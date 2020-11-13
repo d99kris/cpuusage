@@ -58,6 +58,7 @@ General syntax:
     cpuusage -c [OPTIONS] PROG [ARGS..]
     cpuusage -f <FUNCTIONS> [OPTIONS] PROG [ARGS..]
     cpuusage -i <INCLUDES> [OPTIONS] PROG [ARGS..]
+    cpuusage -p [OPTIONS] PROG [ARGS..]
     cpuusage -r JSONFILE [OPTIONS]
     cpuusage --help|-h
     cpuusage --version|-v
@@ -76,6 +77,8 @@ Options:
 
     -i <INCLUDES>
            trace functions in specified POSIX headers
+
+    -p     trace child process durations
 
     --help, -h
            display this help and exit
@@ -100,6 +103,8 @@ Options:
            trace from process start
 
     -v     verbose mode
+
+    -y     auto-open resulting html file
 
     PROG   program to run and profile
 
@@ -146,6 +151,18 @@ Resulting visualization:
 Resulting visualization:
 ![culog4 screenshot](/doc/culog4.png)
 
+**Tracing process durations:**
+
+    $ cpuusage -v -o cutrace5.html -p ./ex005.sh 
+    cpuusage: https://github.com/d99kris/cpuusage
+    cpuusage: initializing
+    cpuusage: starting program ./ex005.sh
+    cpuusage: processing output trace
+    cpuusage: completed processing 5 samples
+
+Resulting visualization:
+![culog5 screenshot](/doc/culog5.png)
+
 Alternatives
 ============
 There are many CPU profilers available for Linux and macOS. Most of them are
@@ -157,7 +174,8 @@ sample-based, and here is a list of some of them:
 
 Technical Details
 =================
-Refer to [DESIGN.md](DESIGN.md) for design and implementation details.
+Refer to [ext/README.md](/ext/README.md) for details on the external components
+used by cpuusage.
 
 License
 =======

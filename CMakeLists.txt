@@ -16,7 +16,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/man/man1/cpuusage.1 DESTINATION 
 
 # Catapult
 if (NOT IS_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/share/cpuusage/catapult)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_SOURCE_DIR}/catapult.tar.gz)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_SOURCE_DIR}/ext/catapult.tar.gz)
 endif ()
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/share/cpuusage/catapult DESTINATION share/cpuusage)
 
@@ -64,6 +64,11 @@ target_link_libraries(${PROJECT_NAME} dl)
 target_link_libraries(${PROJECT_NAME}static dl)
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
+# Cpuusageproc library build
+add_library(${PROJECT_NAME}proc SHARED src/cupmain.cpp)
+target_link_libraries(${PROJECT_NAME}proc dl)
+install(TARGETS ${PROJECT_NAME}proc DESTINATION lib)
+
 # Example - ex001 - regular program / non-instrumented
 add_executable(ex001 tests/ex.c)
 target_link_libraries(ex001 pthread)
@@ -77,6 +82,14 @@ target_link_libraries(ex002 pthread cpuusage)
 add_executable(ex003 tests/ex3.cpp src/cpuusage.h)
 target_link_libraries(ex003 pthread cpuusage)
 
+# Example - ex004 - simple program (sleep)
+add_executable(ex004 tests/ex4.cpp)
+target_link_libraries(ex004)
+
+# Example - ex005 - simple scripts
+configure_file(tests/ex5.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005.sh COPYONLY)
+configure_file(tests/ex5b.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005b.sh COPYONLY)
+
 # Tests
 enable_testing()
 
@@ -88,4 +101,12 @@ add_test(test002 "${PROJECT_BINARY_DIR}/test002")
 
 configure_file(tests/test003 ${CMAKE_CURRENT_BINARY_DIR}/test003 COPYONLY)
 add_test(test003 "${PROJECT_BINARY_DIR}/test003")
+
+configure_file(tests/test004 ${CMAKE_CURRENT_BINARY_DIR}/test004 COPYONLY)
+add_test(test004 "${PROJECT_BINARY_DIR}/test004")
+
+if(UNIX AND NOT APPLE)
+  configure_file(tests/test005 ${CMAKE_CURRENT_BINARY_DIR}/test005 COPYONLY)
+  add_test(test005 "${PROJECT_BINARY_DIR}/test005")
+endif()
 
