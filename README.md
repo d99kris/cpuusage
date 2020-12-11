@@ -1,9 +1,9 @@
 Cpuusage
 ========
 
-| **Linux + Mac** |
-|-----------------|
-| [![Build status](https://travis-ci.com/d99kris/cpuusage.svg?branch=master)](https://travis-ci.com/d99kris/cpuusage) |
+| **Linux** | **Mac** |
+|-----------|---------|
+| [![Linux](https://github.com/d99kris/cpuusage/workflows/Linux/badge.svg)](https://github.com/d99kris/cpuusage/actions?query=workflow%3ALinux) | [![macOS](https://github.com/d99kris/cpuusage/workflows/macOS/badge.svg)](https://github.com/d99kris/cpuusage/actions?query=workflow%3AmacOS) |
 
 Cpuusage is an instrumentation CPU profiler for Linux and macOS applications.
 It provides logging of standard POSIX function calls for any application, and logging of
