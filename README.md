@@ -29,7 +29,7 @@ Resulting visualization:
 Supported Platforms
 ===================
 Cpuusage is primarily developed and tested on Linux, but basic functionality
-should work in macOS / OS X as well.
+should work in macOS as well.
 
 Installation
 ============
@@ -184,4 +184,3 @@ Cpuusage is distributed under the BSD 3-Clause license. See LICENSE file.
 Keywords
 ========
 linux, macos, cpu usage, instrumented profiler, alternative to callgrind.
-
