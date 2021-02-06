@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2017-2020 Kristofer Berggren
+# Copyright (C) 2017-2021 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
@@ -36,12 +36,15 @@ showusage()
   echo "Options:"
   echo "   -d              debug mode, running program through debugger"
   echo "   -j <PATH>       write iterim JSON trace log to specified path"
-  echo "   -m <SAMPLES>    only log up to specified number of samples"
+  echo "   -m <MINTIME>    minimum sample time in usec (default 0)"
+  echo "   -n <SAMPLES>    only log up to specified number of samples"
+  echo "                   (default 1000000)"
   echo "   -o <PATH>       write HTML report to specified path, rather"
   echo "                   than default ./cutrace-PID.html"
   echo "   -r <JSONFILE>   read JSON file and convert to HTML report"
   echo "   -s              start tracing with SIGUSR1 and stop with"
   echo "                   SIGUSR2, instead of trace from process start"
+  echo "   -u              trace only main-thread"
   echo "   -v              verbose mode"
   echo "   -y              auto-open resulting html file"
   echo "   PROG            program to run and profile"
@@ -71,9 +74,9 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.41"
+  echo "cpuusage v1.42"
   echo ""
-  echo "Copyright (C) 2017-2020 Kristofer Berggren"
+  echo "Copyright (C) 2017-2021 Kristofer Berggren"
   echo ""
   echo "cpuusage is distributed under the BSD 3-Clause license."
   echo ""
@@ -105,7 +108,7 @@ PROC=""
 READ=""
 VERB="false"
 OPEN="0"
-while getopts "?acdf:i:j:m:o:pr:svy" OPT; do
+while getopts "?acdf:i:j:m:n:o:pr:suvy" OPT; do
   case "${OPT}" in
   \?)
     showusage
@@ -130,6 +133,10 @@ while getopts "?acdf:i:j:m:o:pr:svy" OPT; do
     OUTJSONPATH="${OPTARG}"
     ;;
   m)
+    CU_MIN_TIME="${OPTARG}"
+    export CU_MIN_TIME
+    ;;
+  n)
     CU_MAX_SAMPLES="${OPTARG}"
     export CU_MAX_SAMPLES
     ;;
@@ -144,6 +151,10 @@ while getopts "?acdf:i:j:m:o:pr:svy" OPT; do
     ;;
   s)
     MANUAL="1"
+    ;;
+  u)
+    CU_MAIN_THREAD_ONLY="1"
+    export CU_MAIN_THREAD_ONLY
     ;;
   v)
     VERB="true"

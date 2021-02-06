@@ -37,6 +37,10 @@ Pre-requisites (Ubuntu):
 
     sudo apt install git cmake build-essential python-lxml
 
+Pre-requisites (Python):
+
+    pip3 install -U six
+
 Download the source code:
 
     git clone https://github.com/d99kris/cpuusage && cd cpuusage
@@ -89,7 +93,11 @@ Options:
     -j <PATH>
            write iterim JSON trace log to specified path
 
-    -m <SAMPLES>
+    -m <MINTIME>
+           only log samples with minimum specified duration (in usec)
+           currently only supported when tracing main-thread only.
+
+    -n <SAMPLES>
            only log up to specified number of samples
 
     -o <PATH>
@@ -101,6 +109,8 @@ Options:
 
     -s     start tracing with SIGUSR1 and stop with SIGUSR2, instead of
            trace from process start
+
+    -u     trace only main-thread
 
     -v     verbose mode
 

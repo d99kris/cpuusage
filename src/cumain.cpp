@@ -1,7 +1,7 @@
 /*
  * cumain.cpp
  *
- * Copyright (C) 2017 Kristofer Berggren
+ * Copyright (C) 2017-2021 Kristofer Berggren
  * All rights reserved.
  * 
  * cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
@@ -45,6 +45,9 @@ static std::atomic_flag samples_lock = ATOMIC_FLAG_INIT;
 static std::atomic<bool> tracing_enabled(false);
 static int64_t count_samples = 0;
 static int64_t max_samples = 1000000;
+static int64_t min_time = 0;
+static bool main_thread_only = false;
+static pthread_t main_thread;
 
 
 /* ----------- Local Function Prototypes ------------------------- */
@@ -63,6 +66,8 @@ void __attribute__ ((constructor)) cu_init(void)
 {
   if (getenv("LD_PRELOAD") == NULL) return;
   
+  main_thread = pthread_self();
+
   char *manual = getenv("CU_MANUAL");
   if ((manual != NULL) && (strncmp(manual, "1", 1) == 0))
   {
@@ -135,6 +140,16 @@ static void cu_start_tracing(int)
     max_samples = strtoll(max_samples_str, NULL, 10);
   }
 
+  min_time = 0;
+  char *min_time_str = getenv("CU_MIN_TIME");
+  if (min_time_str != NULL)
+  {
+    min_time = strtoll(min_time_str, NULL, 10);
+  }
+
+  char *main_thread_only_str = getenv("CU_MAIN_THREAD_ONLY");
+  main_thread_only = (main_thread_only_str != NULL) && (strncmp(main_thread_only_str, "1", 1) == 0);
+
   if (samples == NULL)
   {
     samples = new std::vector<Sample>;
@@ -168,6 +183,8 @@ static inline void cu_log_event(void *func, bool enter)
 {
   if (!tracing_enabled) return;
 
+  if (main_thread_only && !pthread_equal(pthread_self(), main_thread)) return;
+
   // set function pointer, thread and type (enter / exit)
   Sample sample;
   sample.enter = enter;
@@ -184,10 +201,21 @@ static inline void cu_log_event(void *func, bool enter)
   {
   }
 
-  // store sample, update sample count, and check upper limit
-  samples->push_back(sample);
-  ++count_samples;
-  if (count_samples >= max_samples) tracing_enabled = false;
+  // for min_time (currently only supported for single thread trace), calculate duration from previous sample
+  if (main_thread_only && (min_time > 0) && !enter && !samples->empty() && ((sample.ts - samples->back().ts) < min_time) &&
+      samples->back().enter && (samples->back().func == sample.func))
+  {
+    // skip sample, drop last enter and update sample count
+    samples->pop_back();
+    --count_samples;
+  }
+  else
+  {
+    // store sample, update sample count, and check upper limit
+    samples->push_back(sample);
+    ++count_samples;
+    if (count_samples >= max_samples) tracing_enabled = false;
+  }
 
   // release spin lock
   samples_lock.clear(std::memory_order_release);
