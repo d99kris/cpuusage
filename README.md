@@ -76,6 +76,8 @@ Options:
 
     -d     debug mode, running program through debugger
 
+    -e     separate processes for child process trace
+
     -f <FUNCTIONS>
            trace specified POSIX functions
 

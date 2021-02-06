@@ -35,6 +35,7 @@ showusage()
   echo ""
   echo "Options:"
   echo "   -d              debug mode, running program through debugger"
+  echo "   -e              separate processes for child process trace"
   echo "   -j <PATH>       write iterim JSON trace log to specified path"
   echo "   -m <MINTIME>    minimum sample time in usec (default 0)"
   echo "   -n <SAMPLES>    only log up to specified number of samples"
@@ -74,7 +75,7 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.42"
+  echo "cpuusage v1.43"
   echo ""
   echo "Copyright (C) 2017-2021 Kristofer Berggren"
   echo ""
@@ -108,7 +109,7 @@ PROC=""
 READ=""
 VERB="false"
 OPEN="0"
-while getopts "?acdf:i:j:m:n:o:pr:suvy" OPT; do
+while getopts "?acdef:i:j:m:n:o:pr:suvy" OPT; do
   case "${OPT}" in
   \?)
     showusage
@@ -122,6 +123,10 @@ while getopts "?acdf:i:j:m:n:o:pr:suvy" OPT; do
     ;;
   d)
     DEBUG="1"
+    ;;
+  e)
+    CU_EXPAND_PROCESSES="1"
+    export CU_EXPAND_PROCESSES
     ;;
   f)
     FUNCS="${OPTARG}"

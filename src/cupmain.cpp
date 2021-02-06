@@ -31,31 +31,21 @@
 #include <sys/wait.h>
 
 
-/* ----------- File Global Variables ----------------------------- */
-static int64_t isCollapsed = 1;
-static int64_t isLogArgs = 0;
-static int64_t isFirstProcess = 0;
-static char default_path[32];
-static char* path = NULL;
-static int64_t beginTime = 0;
-static int64_t endTime = 0;
-
-
 /* ----------- Local Functions ----------------------------------- */
-static void cup_writeheader()
+static void cup_writeheader(const char* p_Path)
 {
   // open report file
-  FILE *outfile = fopen(path, "w");
+  FILE *outfile = fopen(p_Path, "w");
   if (outfile == NULL)
   {
-    fprintf(stderr, "cpuusage: unable to write to output path '%s'\n", path);
+    fprintf(stderr, "cpuusage: unable to write to output path '%s'\n", p_Path);
     return;
   }
 
   // lock file
   if (flock(fileno(outfile), LOCK_EX) != 0)
   {
-    fprintf(stderr, "cpuusage: unable to lock output path '%s'\n", path);
+    fprintf(stderr, "cpuusage: unable to lock output path '%s'\n", p_Path);
     return;
   }
 
@@ -185,32 +175,35 @@ static std::string cup_getproccmd()
   return cmd;
 }
 
-static void cup_writeevent()
+static void cup_writeevent(bool p_IsFirstProcess, const char* p_Path,
+                           int64_t p_BeginTime, int64_t p_EndTime,
+                           bool p_IsExpandProcesses)
 {
   // get process id/cmd
   std::string id = cup_getprocid();
   std::string cmd = cup_getproccmd();
 
   // open report file
-  FILE *outfile = fopen(path, "a");
+  FILE *outfile = fopen(p_Path, "a");
   if (outfile == NULL)
   {
-    fprintf(stderr, "cpuusage: unable to append to output path '%s'\n", path);
+    fprintf(stderr, "cpuusage: unable to append to output path '%s'\n", p_Path);
     return;
   }
 
   // lock file
   if (flock(fileno(outfile), LOCK_EX) != 0)
   {
-    fprintf(stderr, "cpuusage: unable to lock output path '%s'\n", path);
+    fprintf(stderr, "cpuusage: unable to lock output path '%s'\n", p_Path);
     return;
   }
 
   // write entry
   const pid_t pid = 0;
-  const pid_t tid = isCollapsed ? 0 : getpid();
-  const int64_t ts = beginTime;
-  const int64_t dur = endTime - beginTime;
+  const bool isLogArgs = false;
+  const pid_t tid = p_IsExpandProcesses ? getpid() : 0;
+  const int64_t ts = p_BeginTime;
+  const int64_t dur = p_EndTime - p_BeginTime;
   fprintf(outfile, "{ \"ph\":\"X\", \"cat\":\"perf\", \"pid\":%d, "
           "\"tid\":%d, \"ts\":%" PRId64 ", \"dur\":%" PRId64 ", \"name\":\"%s\"",
           pid, tid, ts, dur, cmd.c_str());
@@ -222,7 +215,7 @@ static void cup_writeevent()
   fprintf(outfile, " }");
 
   // special handling for first process / last event
-  if (isFirstProcess == 1)
+  if (p_IsFirstProcess)
   {
     fprintf(outfile, "  ");
   }
@@ -232,7 +225,7 @@ static void cup_writeevent()
   }
   
   // write report footer if it's the main process
-  if (isFirstProcess == 1)
+  if (p_IsFirstProcess)
   {
     fprintf(outfile, "\n");
     fprintf(outfile, "]\n");
@@ -247,46 +240,71 @@ static void cup_writeevent()
   fclose(outfile);
 }
 
+static void cup_handleevent(bool p_IsStart)
+{
+  if (getenv("LD_PRELOAD") == NULL) return;
+
+  // @todo: figure out why isFirstProcess static is not retained for final call
+  static bool isFirstProcess = false;
+  static char default_path[32];
+  static char* path = NULL;
+  static int64_t beginTime = 0;
+
+  if (p_IsStart)
+  {
+    // determine report path
+    path = getenv("CU_FILE");
+    if (path == NULL)
+    {
+      snprintf(default_path, sizeof(default_path), "./culog-%d.json", getpid());
+      path = default_path;
+    }
+
+    // check if file does not exist
+    if (access(path, F_OK) == -1)
+    {
+      // remember this is the main process
+      isFirstProcess = true;
+
+      // write header
+      cup_writeheader(path);
+    }
+
+    // store first process flag in environment
+    setenv("CU_IS_FIRST_PROCESS", isFirstProcess ? "1" : "0", true);
+
+    // store begin timestamp
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    beginTime = ((int64_t)tv.tv_sec * 1000000ll) + ((int64_t)tv.tv_usec);
+  }
+  else
+  {
+    // store end timestamp
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    const int64_t endTime = ((int64_t)tv.tv_sec * 1000000ll) + ((int64_t)tv.tv_usec);
+
+    // read back first process flag from environment
+    char* isFirstStr = getenv("CU_IS_FIRST_PROCESS");
+    isFirstProcess = (isFirstStr != NULL) && (strncmp(isFirstStr, "1", 1) == 0);
+
+    char* isExpandStr = getenv("CU_EXPAND_PROCESSES");
+    bool isExpandProcesses = (isExpandStr != NULL) && (strncmp(isExpandStr, "1", 1) == 0);
+
+    // write event to file
+    cup_writeevent(isFirstProcess, path, beginTime, endTime, isExpandProcesses);
+  }
+}
+
 
 /* ----------- Global Functions ---------------------------------- */
 void __attribute__ ((constructor)) cup_init(void)
 {
-  if (getenv("LD_PRELOAD") == NULL) return;
-
-  path = getenv("CU_FILE");
-
-  // determine report path
-  if (path == NULL)
-  {
-    snprintf(default_path, sizeof(default_path), "./culog-%d.json", getpid());
-    path = default_path;
-  }
-
-  // check if file does not exist
-  if (access(path, F_OK) == -1)
-  {
-    // remember this is the main process
-    isFirstProcess = 1;
-
-    // write header
-    cup_writeheader();
-  }
-
-  // store begin timestamp
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  beginTime = ((int64_t)tv.tv_sec * 1000000ll) + ((int64_t)tv.tv_usec);
+  cup_handleevent(true);
 }
 
 void __attribute__ ((destructor)) cup_fini(void)
 {
-  if (getenv("LD_PRELOAD") == NULL) return;
-
-  // store end timestamp
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  endTime = ((int64_t)tv.tv_sec * 1000000ll) + ((int64_t)tv.tv_usec);
-
-  // write event to file
-  cup_writeevent();
+  cup_handleevent(false);
 }
