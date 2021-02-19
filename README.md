@@ -29,7 +29,14 @@ Resulting visualization:
 Supported Platforms
 ===================
 Cpuusage is primarily developed and tested on Linux, but basic functionality
-should work in macOS as well.
+should work in macOS as well. Current version has been tested on:
+- macOS Big Sur 11.0
+- Ubuntu 20.04 LTS
+
+Limitation: On macOS this tool relies on code injection using
+DYLD_INSERT_LIBRARIES, which generally does not work with third-party
+applications in a standard system. Using it on (your own) applications built
+from source should work fine though.
 
 Installation
 ============
