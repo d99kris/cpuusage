@@ -1,5 +1,5 @@
 /*
- * ex4.cpp
+ * ex004.cpp
  *
  * Copyright (C) 2020 Kristofer Berggren
  * All rights reserved.

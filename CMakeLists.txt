@@ -70,25 +70,25 @@ target_link_libraries(${PROJECT_NAME}proc dl)
 install(TARGETS ${PROJECT_NAME}proc DESTINATION lib)
 
 # Example - ex001 - regular program / non-instrumented
-add_executable(ex001 tests/ex.c)
+add_executable(ex001 tests/ex001.c)
 target_link_libraries(ex001 pthread)
 
 # Example - ex002 - instrumented
-add_executable(ex002 tests/ex.c)
+add_executable(ex002 tests/ex002.c)
 set_target_properties(ex002 PROPERTIES COMPILE_FLAGS "-rdynamic -finstrument-functions")
 target_link_libraries(ex002 pthread cpuusage)
 
 # Example - ex003 - manually instrumented
-add_executable(ex003 tests/ex3.cpp src/cpuusage.h)
+add_executable(ex003 tests/ex003.cpp src/cpuusage.h)
 target_link_libraries(ex003 pthread cpuusage)
 
 # Example - ex004 - simple program (sleep)
-add_executable(ex004 tests/ex4.cpp)
+add_executable(ex004 tests/ex004.cpp)
 target_link_libraries(ex004)
 
 # Example - ex005 - simple scripts
-configure_file(tests/ex5.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005.sh COPYONLY)
-configure_file(tests/ex5b.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005b.sh COPYONLY)
+configure_file(tests/ex005.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005.sh COPYONLY)
+configure_file(tests/ex005b.sh ${CMAKE_CURRENT_BINARY_DIR}/ex005b.sh COPYONLY)
 
 # Tests
 enable_testing()

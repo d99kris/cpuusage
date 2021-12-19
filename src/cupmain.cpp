@@ -244,34 +244,30 @@ static void cup_handleevent(bool p_IsStart)
 {
   if (getenv("LD_PRELOAD") == NULL) return;
 
-  // @todo: figure out why isFirstProcess static is not retained for final call
-  static bool isFirstProcess = false;
   static char default_path[32];
   static char* path = NULL;
   static int64_t beginTime = 0;
 
+  // determine report path
+  path = getenv("CU_FILE");
+  if (path == NULL)
+  {
+    snprintf(default_path, sizeof(default_path), "./culog-%d.json", getpid());
+    path = default_path;
+  }
+
   if (p_IsStart)
   {
-    // determine report path
-    path = getenv("CU_FILE");
-    if (path == NULL)
-    {
-      snprintf(default_path, sizeof(default_path), "./culog-%d.json", getpid());
-      path = default_path;
-    }
-
     // check if file does not exist
     if (access(path, F_OK) == -1)
     {
       // remember this is the main process
-      isFirstProcess = true;
+      std::string pid = std::to_string(getpid());
+      setenv("CU_FIRST_PROCESS", pid.c_str(), true);
 
       // write header
       cup_writeheader(path);
     }
-
-    // store first process flag in environment
-    setenv("CU_IS_FIRST_PROCESS", isFirstProcess ? "1" : "0", true);
 
     // store begin timestamp
     struct timeval tv;
@@ -285,9 +281,10 @@ static void cup_handleevent(bool p_IsStart)
     gettimeofday(&tv, NULL);
     const int64_t endTime = ((int64_t)tv.tv_sec * 1000000ll) + ((int64_t)tv.tv_usec);
 
-    // read back first process flag from environment
-    char* isFirstStr = getenv("CU_IS_FIRST_PROCESS");
-    isFirstProcess = (isFirstStr != NULL) && (strncmp(isFirstStr, "1", 1) == 0);
+    // read back first process id from environment
+    std::string firstpid = std::string(getenv("CU_FIRST_PROCESS"));
+    std::string pid = std::to_string(getpid());
+    const bool isFirstProcess = (pid == firstpid);
 
     char* isExpandStr = getenv("CU_EXPAND_PROCESSES");
     bool isExpandProcesses = (isExpandStr != NULL) && (strncmp(isExpandStr, "1", 1) == 0);

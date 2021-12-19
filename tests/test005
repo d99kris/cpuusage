@@ -52,7 +52,7 @@ if [ "${LINE}" != "${EXPT}" ]; then
 fi
 
 LINE=$(cat ${TMPDIR}/out.txt | head -5 | tail -1)
-EXPT="cpuusage: completed processing 5 samples"
+EXPT="cpuusage: completed processing 7 samples"
 if [ "${LINE}" != "${EXPT}" ]; then
   echo "Output mismatch: \"${LINE}\" != \"${EXPT}\""
   echo "Full test output:"
