@@ -8,7 +8,7 @@ pushd ${TMPDIR} > /dev/null
 
 # Run application
 ${BUILDDIR}/ex003
-${BUILDDIR}/bin/cpuusage -v -r culog.json &> ${TMPDIR}/out.txt
+${BUILDDIR}/bin/cpuusage -v -r culog.json > ${TMPDIR}/out.txt
 
 # Expected
 # cpuusage: https://github.com/d99kris/cpuusage

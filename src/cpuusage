@@ -78,9 +78,9 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.46"
+  echo "cpuusage v1.47"
   echo ""
-  echo "Copyright (C) 2017-2021 Kristofer Berggren"
+  echo "Copyright (C) 2017-2022 Kristofer Berggren"
   echo ""
   echo "cpuusage is distributed under the BSD 3-Clause license."
   echo ""

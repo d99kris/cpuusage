@@ -5,7 +5,7 @@ RV=0
 TMPDIR=$(mktemp -d)
 
 # Run application
-./bin/cpuusage -v -o out.html -c ./ex002 &> ${TMPDIR}/out.txt
+./bin/cpuusage -v -o out.html -c ./ex002 > ${TMPDIR}/out.txt
 
 # Expected
 # cpuusage: https://github.com/d99kris/cpuusage
