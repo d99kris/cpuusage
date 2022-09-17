@@ -1,0 +1,11 @@
+{
+"otherData": {
+  "timestamp":"2022-09-06 19:41:31 +0800",
+  "os":"Darwin 21.6.0",
+  "cores":"4"
+},
+"traceEvents": [
+  { "ph":"B", "cat":"perf", "pid":"13441", "tid":"0x105cf3600", "name":"wrap_pthread_mutex_lock + 0", "ts":1662464491302117 },
+  { "ph":"E", "cat":"perf", "pid":"13441", "tid":"0x105cf3600", "name":"wrap_pthread_mutex_lock + 0", "ts":1662464491302122 }
+]
+}

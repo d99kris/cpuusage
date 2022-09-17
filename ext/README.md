@@ -21,27 +21,12 @@ linked from [Catapult Tracing](https://chromium.googlesource.com/catapult/+/HEAD
 In case Catapult needs to be updated (it happened when updating to Python 3.x
 support) the recommended method is:
 
-1.  Build cpuusage
+1.  Run script to update external modules
 
-    ./genman.sh
+    ./ext/update.sh
 
-2.  Run tests
+2.  Perform any necessary updates to the update.sh script to make tests pass.
 
-    cd build && ctest --output-on-failure
-
-3.  Perform any necessary updates to the Catapult copy in
-    build/share/cpuusage/catapult to make tests pass.
-
-4.  When all tests are passing, create a new tar-ball and make sure to exclude
-    test_data, e.g. `rm -rf share/cpuusage/catapult/tracing/test_data`
-    The tar-ball can be created like this:
-
-    tar -czvf ~/c1.tar.gz share/cpuusage/catapult
-   
-    Then replace the original file:
-
-    cp ~/c1.tar.gz ../ext/catapult.tar.gz
-
-5.  Finally delete the previous build directory and try build and run tests
-    again.
+3.  Once all tests are passing, ext/catapult.tar.gz will be updated
+    automatically.
 
