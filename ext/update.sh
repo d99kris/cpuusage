@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2022 Kristofer Berggren
+# Copyright (C) 2022-2025 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
@@ -35,6 +35,8 @@ update_catapult()
   mkdir third_party && \
   cp -a ${TMPCATAPULT}/third_party/beautifulsoup4-4.9.3 third_party/ && \
   cp -a ${TMPCATAPULT}/third_party/polymer third_party/ && \
+  cp -a ${TMPCATAPULT}/third_party/html5lib-1.1 third_party/ && \
+  cp -a ${TMPCATAPULT}/third_party/webencodings-0.5.1 third_party/ && \
   popd > /dev/null && \
   echo "updated catapult module" || exit 1
 }
