@@ -8,20 +8,20 @@ Cpuusage
 Cpuusage is an instrumentation CPU profiler for Linux and macOS applications.
 It provides logging of standard POSIX function calls for any application, and logging of
 internal function calls for programs compiled with -finstrument-functions.
-The logging output format is a HTML-file generated using 
+The logging output format is a HTML-file generated using
 [Chromium Catapult](https://github.com/catapult-project/catapult).
 
 Example Usage
 =============
 Tracing all POSIX function calls from a regular (non-instrumented) application:
 
-    $ cpuusage -v -o cutrace1.html -a ./ex001 
+    $ cpuusage -v -o cutrace1.html -a ./ex001
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
     cpuusage: starting program ./ex001
     cpuusage: processing output trace
     cpuusage: completed processing 96 samples
-    $ xdg-open cutrace1.html 
+    $ xdg-open cutrace1.html
 
 Resulting visualization:
 ![culog1 screenshot](/doc/culog1.png)
@@ -30,8 +30,8 @@ Supported Platforms
 ===================
 Cpuusage is primarily developed and tested on Linux, but basic functionality
 should work in macOS as well. Current version has been tested on:
-- macOS Big Sur 11.0
-- Ubuntu 20.04 LTS
+- macOS Sequoia 15.2
+- Ubuntu 24.04 LTS
 
 Limitation: On macOS this tool relies on code injection using
 DYLD_INSERT_LIBRARIES, which generally does not work with third-party
@@ -42,11 +42,7 @@ Installation
 ============
 Pre-requisites (Ubuntu):
 
-    sudo apt install git cmake build-essential python-lxml
-
-Pre-requisites (Python):
-
-    pip3 install -U six
+    sudo apt install git cmake build-essential python3-six
 
 Download the source code:
 
@@ -133,13 +129,13 @@ More Examples
 =============
 **Tracing specified POSIX function calls from a regular (non-instrumented) application:**
 
-    $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./ex001 
+    $ cpuusage -v -o cutrace2.html -f fopen,fwrite,fread,fclose ./ex001
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
     cpuusage: starting program ./ex001
     cpuusage: processing output trace
     cpuusage: completed processing 36 samples
-    $ xdg-open cutrace2.html 
+    $ xdg-open cutrace2.html
 
 Resulting visualization:
 ![culog2 screenshot](/doc/culog2.png)
@@ -152,7 +148,7 @@ Resulting visualization:
     cpuusage: starting program ./ex002
     cpuusage: processing output trace
     cpuusage: completed processing 8 samples
-    $ xdg-open cutrace3.html 
+    $ xdg-open cutrace3.html
 
 Resulting visualization:
 ![culog3 screenshot](/doc/culog3.png)
@@ -165,14 +161,14 @@ Resulting visualization:
     cpuusage: starting program ./ex002
     cpuusage: processing output trace
     cpuusage: completed processing 104 samples
-    $ xdg-open cutrace4.html 
+    $ xdg-open cutrace4.html
 
 Resulting visualization:
 ![culog4 screenshot](/doc/culog4.png)
 
 **Tracing process durations:**
 
-    $ cpuusage -v -o cutrace5.html -p ./ex005.sh 
+    $ cpuusage -v -o cutrace5.html -p ./ex005.sh
     cpuusage: https://github.com/d99kris/cpuusage
     cpuusage: initializing
     cpuusage: starting program ./ex005.sh

@@ -2,7 +2,7 @@
 
 # make.sh
 #
-# Copyright (C) 2020 Kristofer Berggren
+# Copyright (C) 2020-2025 Kristofer Berggren
 # All rights reserved.
 #
 # See LICENSE for redistribution information.
@@ -70,12 +70,12 @@ if [[ "${DEPS}" == "1" ]]; then
   if [ "${OS}" == "Linux" ]; then
     DISTRO="$(lsb_release -i | awk -F':\t' '{print $2}')"
     if [[ "${DISTRO}" == "Ubuntu" ]]; then
-      pip3 install -U lxml html5lib || exiterr "deps failed (linux), exiting."
+      sudo apt install git cmake build-essential python3-six || exiterr "deps failed (linux), exiting."
     else
       exiterr "deps failed (unsupported linux distro ${DISTRO}), exiting."
     fi
   elif [ "${OS}" == "Darwin" ]; then
-    pip3 install -U lxml html5lib || exiterr "deps failed (mac), exiting."
+    HOMEBREW_NO_AUTO_UPDATE=1 brew install six || exiterr "deps failed (mac), exiting."
   else
     exiterr "deps failed (unsupported os ${OS}), exiting."
   fi
@@ -116,7 +116,11 @@ if [[ "${INSTALL}" == "1" ]]; then
   if [ "${OS}" == "Linux" ]; then
     cd build && sudo make install && cd .. || exiterr "install failed (linux), exiting."
   elif [ "${OS}" == "Darwin" ]; then
-    cd build && make install && cd .. || exiterr "install failed (mac), exiting."
+    GHSUDO=""
+    if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
+      GHSUDO="sudo"
+    fi
+    cd build && ${GHSUDO} make install && cd .. || exiterr "install failed (mac), exiting."
   else
     exiterr "install failed (unsupported os ${OS}), exiting."
   fi

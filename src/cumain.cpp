@@ -1,9 +1,9 @@
 /*
  * cumain.cpp
  *
- * Copyright (C) 2017-2021 Kristofer Berggren
+ * Copyright (C) 2017-2025 Kristofer Berggren
  * All rights reserved.
- * 
+ *
  * cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
  *
  */
@@ -65,7 +65,7 @@ static std::string cu_addr_to_symbol(void *addr);
 void __attribute__ ((constructor)) cu_init(void)
 {
   if (getenv("LD_PRELOAD") == NULL) return;
-  
+
   main_thread = pthread_self();
 
   char *manual = getenv("CU_MANUAL");
@@ -108,7 +108,7 @@ void cu_stop_tracing()
 {
   cu_stop_tracing(0);
 }
-    
+
 void cu_start_event_sym(void* sym_addr)
 {
   cu_log_event(sym_addr, true);
@@ -155,7 +155,7 @@ static void cu_start_tracing(int)
     samples = new std::vector<Sample>;
     samples->reserve(max_samples);
   }
-  
+
   if (symbols == NULL)
   {
     symbols = new std::map<void*, std::string>;

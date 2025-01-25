@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2017-2022 Kristofer Berggren
+# Copyright (C) 2017-2025 Kristofer Berggren
 # All rights reserved.
 #
 # cpuusage is distributed under the BSD 3-Clause license, see LICENSE for
@@ -10,7 +10,7 @@
 showusage()
 {
   echo "cpuusage is an instrumentation profiler enabling logging of the duration of"
-  echo "internal function calls (for programs compiled with -finstrument-functions flag)" 
+  echo "internal function calls (for programs compiled with -finstrument-functions flag)"
   echo "or external standard POSIX function calls. It provides visualization in HTML"
   echo "format using Chromium Catapult."
   echo ""
@@ -78,9 +78,9 @@ showusage()
 # Version
 showversion()
 {
-  echo "cpuusage v1.49"
+  echo "cpuusage v1.50"
   echo ""
-  echo "Copyright (C) 2017-2022 Kristofer Berggren"
+  echo "Copyright (C) 2017-2025 Kristofer Berggren"
   echo ""
   echo "cpuusage is distributed under the BSD 3-Clause license."
   echo ""
@@ -256,19 +256,19 @@ elif [ "${ALL}" == "1" ]; then
 elif [ "${INSTR}" == "1" ]; then
   ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
   ${VERB} && echo "cpuusage: initializing"
-  touch "${TMPDIR}/nowrappers.txt"  
+  touch "${TMPDIR}/nowrappers.txt"
 
 # Read (-r) Mode
 elif [ "${READ}" != "" ]; then
   ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
   ${VERB} && echo "cpuusage: initializing"
-  touch "${TMPDIR}/read.txt"  
+  touch "${TMPDIR}/read.txt"
 
 # Proc (-p) Mode
 elif [ "${PROC}" != "" ]; then
   ${VERB} && echo "cpuusage: https://github.com/d99kris/cpuusage"
   ${VERB} && echo "cpuusage: initializing"
-  touch "${TMPDIR}/proc.txt"  
+  touch "${TMPDIR}/proc.txt"
 
 fi
 
@@ -288,7 +288,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   rm ${TMPDIR}/prototypes.txt
 
   # Generate C-file wrapper.c
-  ${BINDIR}/cugenwrapper ${TMPDIR}/wrapper.h ${TMPDIR}/wrapper.c  
+  ${BINDIR}/cugenwrapper ${TMPDIR}/wrapper.h ${TMPDIR}/wrapper.c
 
   # Copy CMake and cpuusage library source
   cp ${CUDIR}/src/cumain.cpp ${TMPDIR}/cumain.cpp
@@ -315,6 +315,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
     echo "env LD_PRELOAD=\"${TMPDIR}/build/libwrapper.so\""                 >> "${LLDBCMDPATH}"
     echo "env DYLD_INSERT_LIBRARIES=\"${TMPDIR}/build/libwrapper.dylib\""   >> "${LLDBCMDPATH}"
     echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
+    echo "settings set target.process.stop-on-exec false"                   >> "${LLDBCMDPATH}"
     echo "run ${@:2}"                                                       >> "${LLDBCMDPATH}"
     lldb "${1}" -s "${LLDBCMDPATH}"
     CHILDPID="dbg"
@@ -324,7 +325,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
     echo "cpuusage: error, json log data not created."
     exit 1
   fi
-  
+
   # Save JSON if needed
   if [ "${OUTJSONPATH}" != "" ]; then
     cp ${JSONPATH} ${OUTJSONPATH}
@@ -344,7 +345,7 @@ if [ -f "${TMPDIR}/headers.txt" ] && [ -f "${TMPDIR}/prototypes.txt" ]; then
   if [[ "${RV}" == "0" ]] && [[ "${OPENCMD}" != "" ]]; then
     ${OPENCMD} "${OUTPATH}" &
   fi
-  
+
 elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
 
   # Start program with tracing
@@ -364,6 +365,7 @@ elif [ -f "${TMPDIR}/nowrappers.txt" ]; then
     echo "env LD_PRELOAD=\"${LIBDIR}/libcpuusage.so\""                      >> "${LLDBCMDPATH}"
     echo "env DYLD_INSERT_LIBRARIES=\"${LIBDIR}/libcpuusage.dylib\""        >> "${LLDBCMDPATH}"
     echo "env DYLD_FORCE_FLAT_NAMESPACE=1"                                  >> "${LLDBCMDPATH}"
+    echo "settings set target.process.stop-on-exec false"                   >> "${LLDBCMDPATH}"
     echo "run ${@:2}"                                                       >> "${LLDBCMDPATH}"
     lldb "${1}" -s "${LLDBCMDPATH}"
     CHILDPID="dbg"

@@ -1,9 +1,9 @@
 /*
  * cupmain.cpp
  *
- * Copyright (C) 2020 Kristofer Berggren
+ * Copyright (C) 2020-2025 Kristofer Berggren
  * All rights reserved.
- * 
+ *
  * cpuusage is distributed under the BSD 3-Clause license, see LICENSE for details.
  *
  */
@@ -79,9 +79,9 @@ static void cup_writeheader(const char* p_Path)
   // unlock file
   fflush(outfile);
   flock(fileno(outfile), LOCK_UN);
-  
+
   // close file
-  fclose(outfile);  
+  fclose(outfile);
 }
 
 static std::string cup_escapejson(const std::string& p_Str)
@@ -129,14 +129,14 @@ static std::string cup_getproccmd()
   {
     // failed to fork()
     return pidbracketstr;
-  } 
+  }
   else if (childpid > 0)
   {
     // parent
     int status = 0;
     waitpid(childpid, &status, 0);
   }
-  else 
+  else
   {
     // child
     int outfd = open(tempname, O_WRONLY | O_CREAT);
@@ -145,7 +145,7 @@ static std::string cup_getproccmd()
       fprintf(stderr, "cpuusage: open %s error\n", tempname);
       _exit(EXIT_FAILURE);
     }
-    
+
     if (dup2(outfd, STDOUT_FILENO) == -1)
     {
       fprintf(stderr, "cpuusage: dup2(%d, %d) error\n", outfd, STDOUT_FILENO);
@@ -171,7 +171,7 @@ static std::string cup_getproccmd()
   // clean up
   infile.close();
   remove(tempname);
-  
+
   return cmd;
 }
 
@@ -211,7 +211,7 @@ static void cup_writeevent(bool p_IsFirstProcess, const char* p_Path,
   {
     fprintf(outfile, ", \"args\": { \"cmd\":\"%s\", \"pid\":%d }", cmd.c_str(), getpid());
   }
-  
+
   fprintf(outfile, " }");
 
   // special handling for first process / last event
@@ -223,7 +223,7 @@ static void cup_writeevent(bool p_IsFirstProcess, const char* p_Path,
   {
     fprintf(outfile, ",\n  ");
   }
-  
+
   // write report footer if it's the main process
   if (p_IsFirstProcess)
   {

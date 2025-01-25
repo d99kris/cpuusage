@@ -1,5 +1,5 @@
 # CMake
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14...3.22 FATAL_ERROR)
 
 # Project
 project(cpuusage)
@@ -51,10 +51,6 @@ include_directories("src")
 # Cpuusage library build
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 11)
-if (CMAKE_CXX_COMPILER_ID MATCHES "(Clang|GNU)")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -pedantic")
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
-endif ()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 add_library(${PROJECT_NAME} SHARED src/cumain.cpp src/cpuusage.h)
@@ -62,11 +58,14 @@ add_library(${PROJECT_NAME}static STATIC src/cumain.cpp src/cpuusage.h)
 set_property(TARGET ${PROJECT_NAME}static PROPERTY POSITION_INDEPENDENT_CODE 1)
 target_link_libraries(${PROJECT_NAME} dl)
 target_link_libraries(${PROJECT_NAME}static dl)
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-g -Wall -Wextra -pedantic")
+set_target_properties(${PROJECT_NAME}static PROPERTIES COMPILE_FLAGS "-g -Wall -Wextra -pedantic")
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 # Cpuusageproc library build
 add_library(${PROJECT_NAME}proc SHARED src/cupmain.cpp)
 target_link_libraries(${PROJECT_NAME}proc dl)
+set_target_properties(${PROJECT_NAME}proc PROPERTIES COMPILE_FLAGS "-g -Wall -Wextra -pedantic")
 install(TARGETS ${PROJECT_NAME}proc DESTINATION lib)
 
 # Example - ex001 - regular program / non-instrumented
@@ -75,7 +74,8 @@ target_link_libraries(ex001 pthread)
 
 # Example - ex002 - instrumented
 add_executable(ex002 tests/ex002.c)
-set_target_properties(ex002 PROPERTIES COMPILE_FLAGS "-rdynamic -finstrument-functions")
+set_target_properties(ex002 PROPERTIES COMPILE_FLAGS "-finstrument-functions")
+target_link_options(ex002 PRIVATE "-rdynamic")
 target_link_libraries(ex002 pthread cpuusage)
 
 # Example - ex003 - manually instrumented
