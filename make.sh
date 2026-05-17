@@ -70,12 +70,12 @@ if [[ "${DEPS}" == "1" ]]; then
   if [ "${OS}" == "Linux" ]; then
     DISTRO="$(lsb_release -i | awk -F':\t' '{print $2}')"
     if [[ "${DISTRO}" == "Ubuntu" ]]; then
-      sudo apt update && sudo apt install git cmake build-essential python3-six || exiterr "deps failed (linux), exiting."
+      sudo apt update && sudo apt install git cmake build-essential || exiterr "deps failed (linux), exiting."
     else
       exiterr "deps failed (unsupported linux distro ${DISTRO}), exiting."
     fi
   elif [ "${OS}" == "Darwin" ]; then
-    HOMEBREW_NO_AUTO_UPDATE=1 brew install six || exiterr "deps failed (mac), exiting."
+    true
   else
     exiterr "deps failed (unsupported os ${OS}), exiting."
   fi

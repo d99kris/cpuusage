@@ -25,6 +25,7 @@ prereq()
 
 update_catapult()
 {
+  REPOROOT="$(pwd)"
   pushd ./build/share/cpuusage/catapult/ > /dev/null && \
   rm -rf ./* && \
   cp ${TMPCATAPULT}/LICENSE LICENSE && \
@@ -37,6 +38,9 @@ update_catapult()
   cp -a ${TMPCATAPULT}/third_party/polymer third_party/ && \
   cp -a ${TMPCATAPULT}/third_party/html5lib-1.1 third_party/ && \
   cp -a ${TMPCATAPULT}/third_party/webencodings-0.5.1 third_party/ && \
+  mkdir third_party/six && \
+  cp ${REPOROOT}/ext/six/six.py third_party/six/six.py && \
+  cp ${REPOROOT}/ext/six/LICENSE third_party/six/LICENSE && \
   popd > /dev/null && \
   echo "updated catapult module" || exit 1
 }

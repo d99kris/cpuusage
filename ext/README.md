@@ -30,3 +30,11 @@ support) the recommended method is:
 3.  Once all tests are passing, ext/catapult.tar.gz will be updated
     automatically.
 
+Six
+---
+The `six` Python module is required by Catapult but upstream no longer ships
+it inside the Catapult tree, and the Homebrew `six` formula was disabled in
+2025. A vendored copy of [six](https://github.com/benjaminp/six) (MIT) is
+kept in `ext/six/` and folded into `catapult/third_party/six/` by
+`update.sh` so that `catapult.tar.gz` is self-contained.
+
