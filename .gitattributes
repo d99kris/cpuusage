@@ -1,0 +1,4 @@
+ext/** linguist-vendored
+posixwrap/** linguist-vendored
+tests/** linguist-vendored
+make.sh linguist-vendored
